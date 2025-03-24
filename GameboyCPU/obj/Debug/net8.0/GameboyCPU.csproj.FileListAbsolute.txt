@@ -1,0 +1,5 @@
+C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\obj\Debug\net8.0\GameboyCPU.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\obj\Debug\net8.0\GameboyCPU.AssemblyInfoInputs.cache
+C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\obj\Debug\net8.0\GameboyCPU.AssemblyInfo.cs
+C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\obj\Debug\net8.0\GameboyCPU.csproj.CoreCompileInputs.cache
+C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\obj\Debug\net8.0\GameboyCPU.sourcelink.json
