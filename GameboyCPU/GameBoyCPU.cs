@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 
@@ -24,6 +25,8 @@ namespace GameboyCPU
         public bool HalfCarryFlag = false;
 
         public bool subtractFlagN = false;
+
+        public bool IMEFlag = false;
 
         public unsafe struct Instruction
         {
@@ -127,7 +130,147 @@ namespace GameboyCPU
             instructionSet[0x67] = () => LD(ref registers.registerHL, (byte)registers.registerAF, true);
             instructionSet[0x68] = () => LD(ref registers.registerHL, (byte)registers.registerBC, false);
             instructionSet[0x69] = () => LD(ref registers.registerHL, (byte)(registers.registerBC << 8), false);
-            instructionSet[0x6A] = () => LD(ref registers.registerHL, (byte)registers.)
+            instructionSet[0x6A] = () => LD(ref registers.registerHL, (byte)registers.registerDE, false);
+            instructionSet[0x6B] = () => LD(ref registers.registerHL, (byte)(registers.registerDE << 8), false);
+            instructionSet[0x6C] = () => LD(ref registers.registerHL, (byte)(registers.registerHL), false);
+            instructionSet[0x6D] = () => LD(ref registers.registerHL, (byte)(registers.registerHL << 8), false);
+            instructionSet[0x6E] = () => LD(ref registers.registerHL, registers.registerHL, registers.registerHL, false);
+            instructionSet[0x6F] = () => LD(ref registers.registerHL, (byte)registers.registerAF, false);
+            instructionSet[0x70] = () => LD(ref registers.registerHL, (byte)registers.registerBC, registers.registerHL, true);
+            instructionSet[0x71] = () => LD(ref registers.registerHL, (byte)(registers.registerBC << 8), registers.registerHL, true);
+            instructionSet[0x72] = () => LD(ref registers.registerHL, (byte)registers.registerDE, registers.registerHL, true);
+            instructionSet[0x73] = () => LD(ref registers.registerHL, (byte)(registers.registerDE << 8), registers.registerHL, true);
+            instructionSet[0x74] = () => LD(ref registers.registerHL, (byte)(registers.registerHL), registers.registerHL, true);
+            instructionSet[0x75] = () => LD(ref registers.registerHL, (byte)(registers.registerHL << 8), registers.registerHL, true);
+            instructionSet[0x76] = () => HALT();
+            instructionSet[0x77] = () => LD(ref registers.registerHL, (byte)registers.registerAF, registers.registerHL, true);
+            instructionSet[0x78] = () => LD(ref registers.registerAF, (byte)registers.registerBC, registers.registerAF, true);
+            instructionSet[0x79] = () => LD(ref registers.registerAF, (byte)(registers.registerBC << 8), registers.registerAF, true);
+            instructionSet[0x7A] = () => LD(ref registers.registerAF, (byte)registers.registerDE, registers.registerAF, true);
+            instructionSet[0x7B] = () => LD(ref registers.registerAF, (byte)(registers.registerDE << 8), registers.registerAF, true);
+            instructionSet[0x7C] = () => LD(ref registers.registerAF, (byte)(registers.registerHL), registers.registerAF, true);
+            instructionSet[0x7D] = () => LD(ref registers.registerAF, (byte)(registers.registerHL << 8), registers.registerAF, true);
+            instructionSet[0x7E] = () => LD(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
+            instructionSet[0x7F] = () => LD(ref registers.registerAF, (byte)registers.registerAF, registers.registerAF, true);
+            instructionSet[0x80] = () => ADD(ref registers.registerAF, (byte)registers.registerBC, true);
+            instructionSet[0x81] = () => ADD(ref registers.registerAF, (byte)(registers.registerBC << 8), true);
+            instructionSet[0x82] = () => ADD(ref registers.registerAF, (byte)registers.registerDE, true);
+            instructionSet[0x83] = () => ADD(ref registers.registerAF, (byte)(registers.registerDE << 8), true);
+            instructionSet[0x84] = () => ADD(ref registers.registerAF, (byte)registers.registerHL, true);
+            instructionSet[0x85] = () => ADD(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
+            instructionSet[0x86] = () => ADD(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
+            instructionSet[0x87] = () => ADD(ref registers.registerAF, (byte)registers.registerAF, true);
+            instructionSet[0x88] = () => ADC(ref registers.registerAF, (byte)registers.registerBC, true);
+            instructionSet[0x89] = () => ADC(ref registers.registerAF, (byte)(registers.registerBC << 8), true);
+            instructionSet[0x8A] = () => ADC(ref registers.registerAF, (byte)registers.registerDE, true);
+            instructionSet[0x8B] = () => ADC(ref registers.registerAF, (byte)(registers.registerDE << 8), true);
+            instructionSet[0x8C] = () => ADC(ref registers.registerAF, (byte)registers.registerHL, true);
+            instructionSet[0x8D] = () => ADC(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
+            instructionSet[0x8E] = () => ADC(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
+            instructionSet[0x8F] = () => ADC(ref registers.registerAF, (byte)registers.registerAF, true);
+            instructionSet[0x90] = () => SUB(ref registers.registerAF, (byte)registers.registerBC, true);
+            instructionSet[0x91] = () => SUB(ref registers.registerAF, (byte)(registers.registerBC << 8), true);
+            instructionSet[0x92] = () => SUB(ref registers.registerAF, (byte)registers.registerDE, true);
+            instructionSet[0x93] = () => SUB(ref registers.registerAF, (byte)(registers.registerDE << 8), true);
+            instructionSet[0x94] = () => SUB(ref registers.registerAF, (byte)registers.registerHL, true);
+            instructionSet[0x95] = () => SUB(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
+            instructionSet[0x96] = () => SUB(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
+            instructionSet[0x97] = () => SUB(ref registers.registerAF, (byte)registers.registerAF, true);
+            instructionSet[0x98] = () => SBC(ref registers.registerAF, (byte)registers.registerBC, true);
+            instructionSet[0x99] = () => SBC(ref registers.registerAF, (byte)(registers.registerBC << 8), true);
+            instructionSet[0x9A] = () => SBC(ref registers.registerAF, (byte)registers.registerDE, true);
+            instructionSet[0x9B] = () => SBC(ref registers.registerAF, (byte)(registers.registerDE << 8), true);
+            instructionSet[0x9C] = () => SBC(ref registers.registerAF, (byte)registers.registerHL, true);
+            instructionSet[0x9D] = () => SBC(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
+            instructionSet[0x9E] = () => SBC(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
+            instructionSet[0x9F] = () => SBC(ref registers.registerAF, (byte)registers.registerAF, true);
+            instructionSet[0xA0] = () => AND(ref registers.registerAF, (byte)registers.registerBC, true);
+            instructionSet[0xA1] = () => AND(ref registers.registerAF, (byte)(registers.registerBC << 8), true);
+            instructionSet[0xA2] = () => AND(ref registers.registerAF, (byte)registers.registerDE, true);
+            instructionSet[0xA3] = () => AND(ref registers.registerAF, (byte)(registers.registerDE << 8), true);
+            instructionSet[0xA4] = () => AND(ref registers.registerAF, (byte)registers.registerHL, true);
+            instructionSet[0xA5] = () => AND(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
+            instructionSet[0xA6] = () => AND(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
+            instructionSet[0xA7] = () => AND(ref registers.registerAF, (byte)registers.registerAF, true);
+            instructionSet[0xA8] = () => XOR(ref registers.registerAF, (byte)registers.registerBC, true);
+            instructionSet[0xA9] = () => XOR(ref registers.registerAF, (byte)(registers.registerBC << 8), true);
+            instructionSet[0xAA] = () => XOR(ref registers.registerAF, (byte)registers.registerDE, true);
+            instructionSet[0xAB] = () => XOR(ref registers.registerAF, (byte)(registers.registerDE << 8), true);
+            instructionSet[0xAC] = () => XOR(ref registers.registerAF, (byte)registers.registerHL, true);
+            instructionSet[0xAD] = () => XOR(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
+            instructionSet[0xAE] = () => XOR(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
+            instructionSet[0xAF] = () => XOR(ref registers.registerAF, (byte)registers.registerAF, true);
+            instructionSet[0xB0] = () => OR(ref registers.registerAF, (byte)registers.registerBC, true);
+            instructionSet[0xB1] = () => OR(ref registers.registerAF, (byte)(registers.registerBC << 8), true);
+            instructionSet[0xB2] = () => OR(ref registers.registerAF, (byte)registers.registerDE, true);
+            instructionSet[0xB3] = () => OR(ref registers.registerAF, (byte)(registers.registerDE << 8), true);
+            instructionSet[0xB4] = () => OR(ref registers.registerAF, (byte)registers.registerHL, true);
+            instructionSet[0xB5] = () => OR(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
+            instructionSet[0xB6] = () => OR(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
+            instructionSet[0xB7] = () => OR(ref registers.registerAF, (byte)registers.registerAF, true);
+            instructionSet[0xB8] = () => CP(ref registers.registerAF, (byte)registers.registerBC, true);
+            instructionSet[0xB9] = () => CP(ref registers.registerAF, (byte)(registers.registerBC << 8), true);
+            instructionSet[0xBA] = () => CP(ref registers.registerAF, (byte)registers.registerDE, true);
+            instructionSet[0xBB] = () => CP(ref registers.registerAF, (byte)(registers.registerDE << 8), true);
+            instructionSet[0xBC] = () => CP(ref registers.registerAF, (byte)registers.registerHL, true);
+            instructionSet[0xBD] = () => CP(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
+            instructionSet[0xBE] = () => CP(ref registers.registerAF, registers.registerHL, registers.registerHL, true); // compare with memory location
+            instructionSet[0xBF] = () => CP(ref registers.registerAF, (byte)registers.registerAF, true); // compare with itself, should always be 0 and set flags accordingly
+            instructionSet[0xC0] = () => RET(NZ);
+            instructionSet[0xC1] = () => POP(ref registers.registerBC); // Pop BC from stack
+            instructionSet[0xC2] = () => JP(ref registers.nz);
+            instructionSet[0xC3] = () => JP(FetchParameters16Bit()); // Jump to address in PC
+            instructionSet[0xC4] = () => CALL(NZ, FetchParameters16Bit()); // Call if not zero flag is set
+            instructionSet[0xC5] = () => PUSH(ref registers.registerBC); // Push BC onto stack
+            instructionSet[0xC6] = () => ADD(ref registers.registerAF, FetchParameters8Bit(), true); // Add immediate value to A register
+            instructionSet[0xC7] = () => RST(0x00); // Restart at 0x00
+            instructionSet[0xC8] = () => RET(Z); // Return if zero flag is set
+            instructionSet[0xC9] = () => RET(); // Unconditional return from subroutine
+            instructionSet[0xCA] = () => JP(Z, FetchParameters16Bit()); // Jump to address if zero flag is set
+            instructionSet[0xCB] = () => PREFIX();
+            instructionSet[0xCC] = () => CALL(Z, FetchParameters16Bit()); // Call if zero flag is set
+            instructionSet[0xCD] = () => CALL(FetchParameters16Bit()); // Call subroutine at address in PC
+            instructionSet[0xCE] = () => ADC(ref registers.registerAF, FetchParameters8Bit(), true); // Add with carry immediate value to A register
+            instructionSet[0xCF] = () => RST(0x08); // Restart at 0x08, typically used for interrupts or specific routines
+            instructionSet[0xD0] = () => RET(NC); // Return if no carry flag is set
+            instructionSet[0xD1] = () => POP(ref registers.registerDE); // Pop DE from stack
+            instructionSet[0xD2] = () => JP(NC, FetchParameters16Bit()); // Jump to address if no carry flag is set
+            instructionSet[0xD4] = () => CALL(NC, FetchParameters16Bit()); // Call if no carry flag is set
+            instructionSet[0xD5] = () => PUSH(ref registers.registerDE); // Push DE onto stack
+            instructionSet[0xD6] = () => SUB(ref registers.registerAF, FetchParameters8Bit(), true); // Subtract immediate value from A register
+            instructionSet[0xD7] = () => RST(0x10); // Restart at 0x10, typically used for interrupts or specific routines
+            instructionSet[0xD8] = () => RET(C); // Return if carry flag is set
+            instructionSet[0xD9] = () => RET(); // Unconditional return from subroutine (this is a duplicate, should be removed)
+            instructionSet[0xDA] = () => JP(C, FetchParameters16Bit()); // Jump to address if carry flag is set
+            instructionSet[0xDC] = () => CALL(C, FetchParameters16Bit()); // Call if carry flag is set
+            instructionSet[0xDE] = () => ADC(ref registers.registerAF, FetchParameters8Bit(), true); // Add with carry immediate value to A register
+            instructionSet[0xDF] = () => RST(0x18); // Restart at 0x18, typically used for interrupts or specific routines
+            instructionSet[0xE0] = () => LD(ref registers.registerAF, FetchParameters8Bit(), true); // Load immediate value into A register
+            instructionSet[0xE1] = () => POP(ref registers.registerHL); // Pop HL from stack
+            instructionSet[0xE2] = () => LD(registers.registerAF, (byte)(registers.registerBC >> 8), registers.registerAF); // Load BC into A register
+            instructionSet[0xE3] = () => EX(ref registers.registerHL, ref registers.registerSP); // Exchange HL with stack pointer
+            instructionSet[0xE5] = () => PUSH(ref registers.registerHL); // Push HL onto stack
+            instructionSet[0xE6] = () => AND(ref registers.registerAF, FetchParameters8Bit(), true); // AND immediate value with A register
+            instructionSet[0xE7] = () => RST(0x20); // Restart at 0x20, typically used for interrupts or specific routines
+            instructionSet[0xE8] = () => ADD(ref registers.registerSP, (sbyte)FetchParameters8Bit()); // Add signed immediate value to stack pointer
+            instructionSet[0xE9] = () => JP(registers.registerHL); // Jump to address in HL register
+            instructionSet[0xEA] = () => LD(ref registers.registerAF, FetchParameters16Bit(), registers.registerAF); // Load immediate value into A register from address
+            instructionSet[0xEE] = () => XOR(ref registers.registerAF, FetchParameters8Bit(), true); // XOR immediate value with A register
+            instructionSet[0xEF] = () => RST(0x28); // Restart at 0x28, typically used for interrupts or specific routines
+            instructionSet[0xF0] = () => LD(ref registers.registerAF, FetchParameters8Bit(), true); // Load immediate value into A register
+            instructionSet[0xF1] = () => POP(ref registers.registerAF); // Pop AF from stack, typically used for restoring flags
+            instructionSet[0xF2] = () => LD(registers.registerAF, (byte)(registers.registerBC >> 8), registers.registerAF); // Load BC into A register
+            instructionSet[0xF3] = () => DI(); // Disable interrupts (set IMEFlag to false)
+            instructionSet[0xF5] = () => PUSH(ref registers.registerAF); // Push AF onto stack, typically used for saving flags
+            instructionSet[0xF6] = () => OR(ref registers.registerAF, FetchParameters8Bit(), true); // OR immediate value with A register
+            instructionSet[0xF7] = () => RST(0x30); // Restart at 0x30, typically used for interrupts or specific routines
+            instructionSet[0xF8] = () => LD(ref registers.registerHL, (ushort)(registers.registerSP + (sbyte)FetchParameters8Bit())); // Load HL from stack pointer with offset
+            instructionSet[0xF9] = () => LD(ref registers.registerSP, registers.registerHL); // Load stack pointer from HL register
+            instructionSet[0xFA] = () => LD(ref registers.registerAF, registers.registerAF, registers.registerAF); // Load immediate value into A register from address
+            instructionSet[0xFB] = () => EI(); // Enable interrupts (set IMEFlag to true)
+            instructionSet[0xFE] = () => CP(ref registers.registerAF, FetchParameters8Bit(), true); // Compare immediate value with A register
+            instructionSet[0xFF] = () => RST(0x38); // Restart at 0x38, typically used for interrupts or specific routines
+
         }
 
 
@@ -151,6 +294,129 @@ namespace GameboyCPU
         private void NOP()
         {
             return;
+        }
+
+        private void RET(ushort address)
+        {
+
+        }
+
+        private void POP(ref ushort register)
+        {
+            // Pop the value from the stack into the register
+            // This would typically involve reading from memory where the stack pointer is pointing to
+            // and then incrementing the stack pointer.
+            register = 0; // Placeholder for actual popped value
+        }
+
+        private void HALT()
+        {
+            if (IMEFlag)
+            {
+                // actually suspend the CPU;
+            }
+            else if (// no interrupts are enabled)
+            {
+                // do nothing
+            }
+            else
+            {
+                // CPU continues execution after halt but the byte after it is read twice in a row. PC is not incremented 
+            }
+        }
+
+        /// <summary>
+        /// We could just have registser1, register2, and the address as parameters and then always save to that address just for these operational functions
+        /// </summary>
+        /// <param name="register1"></param>
+        /// <param name="register2"></param>
+        /// <param name="isUpper"></param>
+        private void CP(ref ushort register1, byte register2, bool isUpper)
+        {
+            if (isUpper)
+            {
+
+            }
+            else
+            {
+
+            }
+        }
+
+        private void OR(ref ushort register1, byte register2, bool isUpper)
+        {
+            byte chosenByte;
+
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+                chosenByte |= (byte)(register2 >> 8);
+                register1 = (ushort)((register1 & 0x00FF) | chosenByte);
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+                chosenByte |= (byte)(register2 & 0xFF);
+                register1 = (ushort)((register1 & 0xFF00) | chosenByte);
+            }
+        }
+
+        private void OR(ref ushort register1, byte register2, ushort address, bool isUpper)
+        {
+            byte chosenByte;
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+                chosenByte |= (byte)(register2 >> 8);
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+                chosenByte |= (byte)(register2 & 0xFF);
+            }
+            if (address == register1)
+            {
+                // go to memory to find byte
+                //add the number in that byte to registter1
+            }
+            else if (address == register2)
+            {
+                // go to memory to find byte
+                // add the number in that byte to register1
+            }
+            else
+            {
+                throw new Exception("Error: No register matches with address");
+            }
+        }
+
+        private void OR(ref ushort register1, ushort register2, ushort address, bool isUpper)
+        {
+            byte chosenByte;
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+                chosenByte |= (byte)(register2 >> 8);
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+                chosenByte |= (byte)(register2 & 0xFF);
+            }
+            if (address == register1)
+            {
+                // go to memory to find byte
+                //add the number in that byte to registter1
+            }
+            else if (address == register2)
+            {
+                // go to memory to find byte
+                // add the number in that byte to register1
+            }
+            else
+            {
+                throw new Exception("Error: No register matches with address");
+            }
         }
 
         /// <summary>
@@ -213,9 +479,503 @@ namespace GameboyCPU
             // jumps to the address provided in memory from NC bits which are the two first bits of the F register
         }
 
+        private void SUB(ref ushort register1, byte register2, bool isUpper)
+        {
+            if (isUpper)
+            {
+                byte upperByte = (byte)(register1 >> 8);
+                upperByte -= (byte)(register2 >> 8);
+                register1 = (ushort)((register1 & 0x00FF) | upperByte);
+            }
+            else
+            {
+                byte lowerByte = (byte)(register1 & 0xFF);
+                lowerByte -= (byte)(register2 & 0xFF);
+                register1 = (ushort)((register1 & 0xFF00) | lowerByte);
+            }
+        }
+
+        private void SUB(ref ushort register1, byte register2, ushort address, bool isUpper)
+        {
+            ushort chosenByte;
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+                chosenByte -= (byte)(register2 >> 8);
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+                chosenByte -= (byte)(register2 & 0xFF);
+            }
+            if (address == register1)
+            {
+                // go to memory to find byte
+                //add the number in that byte to registter1
+            }
+            else if (address == register2)
+            {
+                // go to memory to find byte
+                // add the number in that byte to register1
+            }
+            else
+            {
+                throw new Exception("Error: No register matches with address");
+            }
+        }
+
+        private void SUB(ref ushort register1, ushort register2, ushort address, bool isUpper)
+        {
+            ushort chosenByte;
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+                chosenByte -= (byte)(register2 >> 8);
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+                chosenByte -= (byte)(register2 & 0xFF);
+            }
+            if (address == register1)
+            {
+                // go to memory to find byte
+                //add the number in that byte to registter1
+            }
+            else if (address == register2)
+            {
+                // go to memory to find byte
+                // add the number in that byte to register1
+            }
+            else
+            {
+                throw new Exception("Error: No register matches with address");
+            }
+        }
+
+        private void AND(ref ushort register1, ushort register2, bool isUpper)
+        {
+            ushort chosenByte;
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+                chosenByte &= (byte)(register2 >> 8);
+                register1 = (ushort)((register1 & 0x00FF) | chosenByte);
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+                chosenByte &= (byte)(register2 & 0xFF);
+                register1 = (ushort)((register1 & 0xFF00) | chosenByte);
+            }
+            register1 = chosenByte;
+        }
+
+        private void AND(ref ushort register1, ushort register2, ushort address, bool isUpper)
+        {
+            ushort chosenByte;
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+                chosenByte &= (byte)(register2 >> 8);
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+                chosenByte &= (byte)(register2 & 0xFF);
+            }
+            if (address == register1)
+            {
+                // go to memory to find byte
+                //add the number in that byte to registter1
+            }
+            else if (address == register2)
+            {
+                // go to memory to find byte
+                // add the number in that byte to register1
+            }
+            else
+            {
+                throw new Exception("Error: No register matches with address");
+            }
+        }
+
+        private void AND(ref ushort register1, byte register2, ushort address, bool isUpper)
+        {
+            ushort chosenByte;
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+                chosenByte &= (byte)(register2 >> 8);
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+                chosenByte &= (byte)(register2 & 0xFF);
+            }
+            if (address == register1)
+            {
+                // go to memory to find byte
+                //add the number in that byte to registter1
+            }
+            else if (address == register2)
+            {
+                // go to memory to find byte
+                // add the number in that byte to register1
+            }
+            else
+            {
+                throw new Exception("Error: No register matches with address");
+            }
+        }
+
+        private void XOR(ref ushort register1, ushort register2, bool isUpper)
+        {
+            ushort chosenByte;
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+                chosenByte ^= (byte)(register2 >> 8);
+                register1 = (ushort)((register1 & 0x00FF) | chosenByte);
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+                chosenByte ^= (byte)(register2 & 0xFF);
+                register1 = (ushort)((register1 & 0xFF00) | chosenByte);
+            }
+        }
+
+        private void XOR(ref ushort register1, ushort register2, ushort address, bool isUpper)
+        {
+            ushort chosenByte;
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+                chosenByte ^= (byte)(register2 >> 8);
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+                chosenByte ^= (byte)(register2 & 0xFF);
+            }
+            if (address == register1)
+            {
+                // go to memory to find byte
+                //add the number in that byte to registter1
+            }
+            else if (address == register2)
+            {
+                // go to memory to find byte
+                // add the number in that byte to register1
+            }
+            else
+            {
+                throw new Exception("Error: No register matches with address");
+            }
+        }
+
+        private void XOR(ref ushort register1, byte register2, ushort address, bool isUpper)
+        {
+            ushort chosenByte;
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+                chosenByte ^= (byte)(register2 >> 8);
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+                chosenByte ^= (byte)(register2 & 0xFF);
+            }
+            if (address == register1)
+            {
+                // go to memory to find byte
+                //add the number in that byte to registter1
+            }
+            else if (address == register2)
+            {
+                // go to memory to find byte
+                // add the number in that byte to register1
+            }
+            else
+            {
+                throw new Exception("Error: No register matches with address");
+            }
+        }
+
+        private void SBC(ref ushort register1, ushort register2, bool isUpper)
+        {
+            if (isUpper)
+            {
+                byte upperByte = (byte)(register1 >> 8);
+                upperByte -= (byte)(register2 >> 8);
+                if (carryFlag)
+                {
+                    upperByte--;
+                }
+                register1 = (ushort)((register1 & 0x00FF) | upperByte);
+            }
+            else
+            {
+                byte lowerByte = (byte)(register1 & 0xFF);
+                lowerByte -= (byte)(register2 & 0xFF);
+                if (carryFlag)
+                {
+                    lowerByte--;
+                }
+                register1 = (ushort)((register1 & 0xFF00) | lowerByte);
+            }
+        }
+
+        private void SBC(ref ushort register1, ushort register2, ushort address, bool isUpper)
+        {
+            ushort chosenByte;
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+                chosenByte -= (byte)(register2 >> 8);
+                if (carryFlag)
+                {
+                    chosenByte--;
+                }
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+                chosenByte -= (byte)(register2 & 0xFF);
+                if (carryFlag)
+                {
+                    chosenByte--;
+                }
+            }
+            if (address == register1)
+            {
+                // go to memory to find byte
+                //add the number in that byte to registter1
+            }
+            else if (address == register2)
+            {
+                // go to memory to find byte
+                // add the number in that byte to register1
+            }
+            else
+            {
+                throw new Exception("Error: No register matches with address");
+            }
+        }
+
+        private void SBC(ref ushort register1, byte register2, ushort address, bool isUpper)
+        {
+            ushort chosenByte;
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+                chosenByte -= (byte)(register2 >> 8);
+                if (carryFlag)
+                {
+                    chosenByte--;
+                }
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+                chosenByte -= (byte)(register2 & 0xFF);
+                if (carryFlag)
+                {
+                    chosenByte--;
+                }
+            }
+            if (address == register1)
+            {
+                // go to memory to find byte
+                //add the number in that byte to registter1
+            }
+            else if (address == register2)
+            {
+                // go to memory to find byte
+                // add the number in that byte to register1
+            }
+            else
+            {
+                throw new Exception("Error: No register matches with address");
+            }
+        }
+
+
         private void ADD(ref ushort register1, ushort register2)
         {
             register1 = (ushort)(register1 + register2);
+        }
+
+        private void ADD(ref ushort register1, ushort register2, bool isUpper)
+        {
+            if (isUpper)
+            {
+                byte upperByte = (byte)(register1 >> 8);
+                upperByte += (byte)(register2 >> 8);
+                register1 = (ushort)((register1 & 0x00FF) | upperByte);
+            }
+            else
+            {
+                byte lowerByte = (byte)(register1 & 0xFF);
+                lowerByte += (byte)(register2 & 0xFF);
+                register1 = (ushort)((register1 & 0xFF00) | lowerByte);
+            }
+        }
+
+        private void ADD(ref ushort register1, byte register2, ushort address, bool isUpper)
+        {
+            byte chosenByte;
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+            }
+
+            if (address == register1)
+            {
+                // go to memory to find byte
+                //add the number in that byte to registter1
+            }
+            else if (address == register2)
+            {
+                // go to memory to find byte
+                // add the number in that byte to register1
+            }
+            else
+            {
+                throw new Exception("Error: No register matches with address");
+            }
+        }
+
+        private void ADD(ref ushort register1, ushort register2, ushort address, bool isUpper)
+        {
+            byte chosenByte;
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+            }
+
+            if (address == register1)
+            {
+                // go to memory to find byte
+                //add the number in that byte to registter1
+            }
+            else if (address == register2)
+            {
+                // go to memory to find byte
+                // add the number in that byte to register1
+            }
+            else
+            {
+                throw new Exception("Error: No register matches with address");
+            }
+        }
+
+        private void ADC(ref ushort register1, ushort register2, bool isUpper)
+        {
+            if (isUpper)
+            {
+                byte upperByte = (byte)(register1 >> 8);
+                upperByte += (byte)(register2 >> 8);
+                if (carryFlag)
+                {
+                    upperByte++;
+                }
+            }
+            else
+            {
+                byte lowerByte = (byte)(register1 & 0xFF);
+                lowerByte += (byte)(register2 & 0xFF);
+                if (carryFlag)
+                {
+                    lowerByte++;
+                }
+            }
+        }
+
+        private void ADC(ref ushort register1, ushort register2, ushort address, bool isUpper)
+        {
+            ushort chosenByte;
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+                chosenByte += (byte)(register2 >> 8);
+                if (carryFlag)
+                {
+                    chosenByte++;
+                }
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+                chosenByte += (byte)(register2 & 0xFF);
+                if (carryFlag)
+                {
+                    chosenByte++;
+                }
+            }
+
+            if (address == register1)
+            {
+                // go to memory to find byte
+                //add the number in that byte to registter1
+            }
+            else if (address == register2)
+            {
+                // go to memory to find byte
+                // add the number in that byte to register1
+            }
+            else
+            {
+                throw new Exception("Error: No register matches with address");
+            }
+        }
+
+        private void ADC(ref ushort register1, byte register2, ushort address, bool isUpper)
+        {
+            ushort chosenByte;
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+                chosenByte += (byte)(register2 >> 8);
+                if (carryFlag)
+                {
+                    chosenByte++;
+                }
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+                chosenByte += (byte)(register2 & 0xFF);
+                if (carryFlag)
+                {
+                    chosenByte++;
+                }
+            }
+
+            if (address == register1)
+            {
+                // go to memory to find byte
+                //add the number in that byte to registter1
+            }
+            else if (address == register2)
+            {
+                // go to memory to find byte
+                // add the number in that byte to register1
+            }
+            else
+            {
+                throw new Exception("Error: No register matches with address");
+            }
         }
 
         /// <summary>
