@@ -43,10 +43,12 @@ namespace GameboyCPU
             GameHeader* Header;
         }
 
-        
+        private MemoryMap memoryMap;
 
-        public GameCartridge()
+        public GameCartridge(string pathToCart, MemoryMap memoryMap)
         {
+            CartLoad(pathToCart); // Load the cartridge data into memory (stub for now, implement actual loading logic)
+            this.memoryMap = memoryMap;
             InitializeCartridgeTypes();
             InitializeRomTypes();
             InitializeOldLicenseeTypes();
@@ -375,7 +377,7 @@ namespace GameboyCPU
 
         public static string[] LicenseeCodes = new string[0xA5];
 
-        public static unsafe bool CartLoad(char* cart)
+        public static unsafe bool CartLoad(string cart)
         {
             return true;
         }

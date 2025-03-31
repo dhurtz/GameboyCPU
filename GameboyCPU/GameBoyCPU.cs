@@ -28,6 +28,16 @@ namespace GameboyCPU
 
         public bool IMEFlag = false;
 
+        public bool zeroFLag = false;
+
+        private MemoryMap memoryMap;
+
+        public GameBoyCPU(MemoryMap memoryMap)
+        {
+            this.memoryMap = memoryMap;
+            InitializeInstructionSet();
+        }
+
         public unsafe struct Instruction
         {
             public byte operationCode;
@@ -42,7 +52,7 @@ namespace GameboyCPU
         {
             instructionSet[0x00] = NOP;
             instructionSet[0x01] = () => LD(ref registers.registerBC, FetchParameters16Bit());
-            instructionSet[0x02] = () => LD(registers.registerBC, registers.registerAF, registers.registerBC);
+            instructionSet[0x02] = () => LD(registers.registerBC, (byte)registers.registerAF, registers.registerBC);
             instructionSet[0x03] = () => INC(ref registers.registerBC);
             instructionSet[0x04] = () => INC(ref registers.registerBC, true);
             instructionSet[0x05] = () => DEC(ref registers.registerBC, true);
@@ -74,7 +84,7 @@ namespace GameboyCPU
             instructionSet[0x1F] = () => RRA();
             instructionSet[0x20] = () => JRWithNC();
             instructionSet[0x21] = () => LD(ref registers.registerHL, FetchParameters16Bit());
-            instructionSet[0x22] = () => LD()
+            instructionSet[0x22] = () => LD();
             instructionSet[0x23] = () => INC(ref registers.registerHL);
             instructionSet[0x24] = () => INC(ref registers.registerHL, true);
             instructionSet[0x25] = () => DEC(ref registers.registerHL, true);
@@ -82,6 +92,22 @@ namespace GameboyCPU
             instructionSet[0x27] = () => DAA();
             instructionSet[0x28] = () => JR(registers.registerBC, false);
             instructionSet[0x29] = () => ADD(ref registers.registerHL, registers.registerHL);
+            instructionSet[0x2A] = () => LD(ref registers.registerHL, FetchParameters16Bit(), registers.registerHL);
+            instructionSet[0x2B] = () => DEC(ref registers.registerHL);
+            instructionSet[0x2C] = () => INC(ref registers.registerHL, false);
+            instructionSet[0x2D] = () => DEC(ref registers.registerHL, false);
+            instructionSet[0x2E] = () => LD(ref registers.registerHL, FetchParameters8Bit(), false);
+            instructionSet[0x2F] = () => CPL();
+            instructionSet[0x30] = () => JRWithNC();
+            instructionSet[0x31] = () => LD(ref registers.registerSP, FetchParameters16Bit());
+            instructionSet[0x32] = () => LD(ref registers.registerHL, FetchParameters16Bit(), registers.registerHL);
+            instructionSet[0x33] = () => INC(ref registers.registerSP);
+            instructionSet[0x34] = () => INC(ref registers.registerHL, true);
+            instructionSet[0x35] = () => DECReference(registers.registerHL);
+            instructionSet[0x36] = () => LD(ref registers.registerHL, FetchParameters8Bit(), true);
+            instructionSet[0x37] = () => SCF();
+            instructionSet[0x38] = () => JRWithC();
+            instructionSet[0x39] = () => ADD(ref registers.registerHL, registers.registerSP);
             instructionSet[0x3A] = () => LD(ref registers.registerAF, );
             instructionSet[0x3B] = () => DEC(ref registers.registerSP);
             instructionSet[0x3C] = () => DEC(ref registers.registerAF, true);
@@ -363,59 +389,37 @@ namespace GameboyCPU
 
         private void OR(ref ushort register1, byte register2, ushort address, bool isUpper)
         {
+            var value = this.memoryMap.GetMemoryValue(address);
             byte chosenByte;
             if (isUpper)
             {
                 chosenByte = (byte)(register1 >> 8);
-                chosenByte |= (byte)(register2 >> 8);
+                var result = chosenByte | value;
+                register1 = (ushort)((register1 & 0x00FF) | result);
             }
             else
             {
-                chosenByte = (byte)(register1 & 0xFF);
-                chosenByte |= (byte)(register2 & 0xFF);
-            }
-            if (address == register1)
-            {
-                // go to memory to find byte
-                //add the number in that byte to registter1
-            }
-            else if (address == register2)
-            {
-                // go to memory to find byte
-                // add the number in that byte to register1
-            }
-            else
-            {
-                throw new Exception("Error: No register matches with address");
+                chosenByte = (byte)(register1 & 0xFF); 
+                var result = chosenByte | value;
+                register1 = (ushort)((register1 & 0xFF00) | result);           
             }
         }
 
         private void OR(ref ushort register1, ushort register2, ushort address, bool isUpper)
         {
+            var value = this.memoryMap.GetMemoryValue(address);
             byte chosenByte;
             if (isUpper)
             {
                 chosenByte = (byte)(register1 >> 8);
-                chosenByte |= (byte)(register2 >> 8);
+                var result = chosenByte | value;
+                register1 = (ushort)((register1 & 0x00FF) | result);
             }
             else
             {
                 chosenByte = (byte)(register1 & 0xFF);
-                chosenByte |= (byte)(register2 & 0xFF);
-            }
-            if (address == register1)
-            {
-                // go to memory to find byte
-                //add the number in that byte to registter1
-            }
-            else if (address == register2)
-            {
-                // go to memory to find byte
-                // add the number in that byte to register1
-            }
-            else
-            {
-                throw new Exception("Error: No register matches with address");
+                var result = chosenByte | value;
+                register1 = (ushort)((register1 & 0xFF00) | result);
             }
         }
 
@@ -497,59 +501,37 @@ namespace GameboyCPU
 
         private void SUB(ref ushort register1, byte register2, ushort address, bool isUpper)
         {
+            var value = this.memoryMap.GetMemoryValue(address);
             ushort chosenByte;
             if (isUpper)
             {
                 chosenByte = (byte)(register1 >> 8);
-                chosenByte -= (byte)(register2 >> 8);
+                var result = chosenByte - value;
+                register1 = (ushort)((register1 & 0x00FF) | result);
             }
             else
             {
                 chosenByte = (byte)(register1 & 0xFF);
-                chosenByte -= (byte)(register2 & 0xFF);
-            }
-            if (address == register1)
-            {
-                // go to memory to find byte
-                //add the number in that byte to registter1
-            }
-            else if (address == register2)
-            {
-                // go to memory to find byte
-                // add the number in that byte to register1
-            }
-            else
-            {
-                throw new Exception("Error: No register matches with address");
+                var result = chosenByte - value;
+                register1 = (ushort)((register1 & 0xFF00) | result);
             }
         }
 
         private void SUB(ref ushort register1, ushort register2, ushort address, bool isUpper)
         {
+            var value = this.memoryMap.GetMemoryValue(address);
             ushort chosenByte;
             if (isUpper)
             {
                 chosenByte = (byte)(register1 >> 8);
-                chosenByte -= (byte)(register2 >> 8);
+                var result = chosenByte - value;
+                register1 = (ushort)((register1 & 0x00FF) | result);
             }
             else
             {
                 chosenByte = (byte)(register1 & 0xFF);
-                chosenByte -= (byte)(register2 & 0xFF);
-            }
-            if (address == register1)
-            {
-                // go to memory to find byte
-                //add the number in that byte to registter1
-            }
-            else if (address == register2)
-            {
-                // go to memory to find byte
-                // add the number in that byte to register1
-            }
-            else
-            {
-                throw new Exception("Error: No register matches with address");
+                var result = chosenByte - value;
+                register1 = (ushort)((register1 & 0xFF00) | result);
             }
         }
 
@@ -573,30 +555,19 @@ namespace GameboyCPU
 
         private void AND(ref ushort register1, ushort register2, ushort address, bool isUpper)
         {
+            var value = this.memoryMap.GetMemoryValue(address);
             ushort chosenByte;
             if (isUpper)
             {
                 chosenByte = (byte)(register1 >> 8);
-                chosenByte &= (byte)(register2 >> 8);
+                var result = chosenByte & value;
+                register1 = (ushort)((register1 & 0x00FF) | result);
             }
             else
             {
                 chosenByte = (byte)(register1 & 0xFF);
-                chosenByte &= (byte)(register2 & 0xFF);
-            }
-            if (address == register1)
-            {
-                // go to memory to find byte
-                //add the number in that byte to registter1
-            }
-            else if (address == register2)
-            {
-                // go to memory to find byte
-                // add the number in that byte to register1
-            }
-            else
-            {
-                throw new Exception("Error: No register matches with address");
+                var result = chosenByte & value;
+                register1 = (ushort)((register1 & 0xFF00) | result);
             }
         }
 
@@ -612,20 +583,6 @@ namespace GameboyCPU
             {
                 chosenByte = (byte)(register1 & 0xFF);
                 chosenByte &= (byte)(register2 & 0xFF);
-            }
-            if (address == register1)
-            {
-                // go to memory to find byte
-                //add the number in that byte to registter1
-            }
-            else if (address == register2)
-            {
-                // go to memory to find byte
-                // add the number in that byte to register1
-            }
-            else
-            {
-                throw new Exception("Error: No register matches with address");
             }
         }
 
@@ -648,59 +605,37 @@ namespace GameboyCPU
 
         private void XOR(ref ushort register1, ushort register2, ushort address, bool isUpper)
         {
+            var value = this.memoryMap.GetMemoryValue(address);
             ushort chosenByte;
             if (isUpper)
             {
                 chosenByte = (byte)(register1 >> 8);
-                chosenByte ^= (byte)(register2 >> 8);
+                var result = chosenByte ^ value;
+                register1 = (ushort)((register1 & 0x00FF) | result);
             }
             else
             {
                 chosenByte = (byte)(register1 & 0xFF);
-                chosenByte ^= (byte)(register2 & 0xFF);
-            }
-            if (address == register1)
-            {
-                // go to memory to find byte
-                //add the number in that byte to registter1
-            }
-            else if (address == register2)
-            {
-                // go to memory to find byte
-                // add the number in that byte to register1
-            }
-            else
-            {
-                throw new Exception("Error: No register matches with address");
+                var result = chosenByte ^ value;
+                register1 = (ushort)((register1 & 0xFF00) | result);
             }
         }
 
         private void XOR(ref ushort register1, byte register2, ushort address, bool isUpper)
         {
+            var value = this.memoryMap.GetMemoryValue(address);
             ushort chosenByte;
             if (isUpper)
             {
                 chosenByte = (byte)(register1 >> 8);
-                chosenByte ^= (byte)(register2 >> 8);
+                var result = chosenByte ^ value;
+                register1 = (ushort)((register1 & 0x00FF) | result);
             }
             else
             {
                 chosenByte = (byte)(register1 & 0xFF);
-                chosenByte ^= (byte)(register2 & 0xFF);
-            }
-            if (address == register1)
-            {
-                // go to memory to find byte
-                //add the number in that byte to registter1
-            }
-            else if (address == register2)
-            {
-                // go to memory to find byte
-                // add the number in that byte to register1
-            }
-            else
-            {
-                throw new Exception("Error: No register matches with address");
+                var result = chosenByte ^ value;
+                register1 = (ushort)((register1 & 0xFF00) | result);
             }
         }
 
@@ -715,6 +650,9 @@ namespace GameboyCPU
                     upperByte--;
                 }
                 register1 = (ushort)((register1 & 0x00FF) | upperByte);
+
+                if (upperByte == 0)
+                    this.
             }
             else
             {
@@ -730,11 +668,12 @@ namespace GameboyCPU
 
         private void SBC(ref ushort register1, ushort register2, ushort address, bool isUpper)
         {
-            ushort chosenByte;
+            var value = this.memoryMap.GetMemoryValue(address);
+            byte chosenByte;
             if (isUpper)
             {
                 chosenByte = (byte)(register1 >> 8);
-                chosenByte -= (byte)(register2 >> 8);
+                var result = chosenByte - value;
                 if (carryFlag)
                 {
                     chosenByte--;
@@ -748,20 +687,6 @@ namespace GameboyCPU
                 {
                     chosenByte--;
                 }
-            }
-            if (address == register1)
-            {
-                // go to memory to find byte
-                //add the number in that byte to registter1
-            }
-            else if (address == register2)
-            {
-                // go to memory to find byte
-                // add the number in that byte to register1
-            }
-            else
-            {
-                throw new Exception("Error: No register matches with address");
             }
         }
 
@@ -838,13 +763,7 @@ namespace GameboyCPU
 
             if (address == register1)
             {
-                // go to memory to find byte
-                //add the number in that byte to registter1
-            }
-            else if (address == register2)
-            {
-                // go to memory to find byte
-                // add the number in that byte to register1
+                this.memoryMap.AddMemoryValue(chosenByte, register2);
             }
             else
             {
@@ -852,6 +771,7 @@ namespace GameboyCPU
             }
         }
 
+        /// add function is wrong pls fix
         private void ADD(ref ushort register1, ushort register2, ushort address, bool isUpper)
         {
             byte chosenByte;
@@ -866,13 +786,7 @@ namespace GameboyCPU
 
             if (address == register1)
             {
-                // go to memory to find byte
-                //add the number in that byte to registter1
-            }
-            else if (address == register2)
-            {
-                // go to memory to find byte
-                // add the number in that byte to register1
+                this.memoryMap.AddMemoryValue(chosenByte, register2);
             }
             else
             {
@@ -890,6 +804,7 @@ namespace GameboyCPU
                 {
                     upperByte++;
                 }
+                register1 = (ushort)((register1 & 0x00FF) | upperByte);
             }
             else
             {
@@ -899,6 +814,7 @@ namespace GameboyCPU
                 {
                     lowerByte++;
                 }
+                register1 = (ushort)((register1 & 0xFF00) | lowerByte);
             }
         }
 
@@ -906,76 +822,47 @@ namespace GameboyCPU
         {
             ushort chosenByte;
             if (isUpper)
-            {
                 chosenByte = (byte)(register1 >> 8);
-                chosenByte += (byte)(register2 >> 8);
-                if (carryFlag)
-                {
-                    chosenByte++;
-                }
-            }
             else
-            {
                 chosenByte = (byte)(register1 & 0xFF);
-                chosenByte += (byte)(register2 & 0xFF);
-                if (carryFlag)
-                {
-                    chosenByte++;
-                }
+
+            chosenByte += memoryMap.GetMemoryValue(address);
+            if (carryFlag)
+            {
+                chosenByte++;
             }
 
-            if (address == register1)
-            {
-                // go to memory to find byte
-                //add the number in that byte to registter1
-            }
-            else if (address == register2)
-            {
-                // go to memory to find byte
-                // add the number in that byte to register1
-            }
-            else
-            {
-                throw new Exception("Error: No register matches with address");
-            }
+            register1 = chosenByte;
         }
 
         private void ADC(ref ushort register1, byte register2, ushort address, bool isUpper)
         {
             ushort chosenByte;
             if (isUpper)
-            {
                 chosenByte = (byte)(register1 >> 8);
-                chosenByte += (byte)(register2 >> 8);
-                if (carryFlag)
-                {
-                    chosenByte++;
-                }
-            }
             else
-            {
                 chosenByte = (byte)(register1 & 0xFF);
-                chosenByte += (byte)(register2 & 0xFF);
-                if (carryFlag)
-                {
-                    chosenByte++;
-                }
-            }
 
-            if (address == register1)
+            chosenByte += memoryMap.GetMemoryValue(address);
+            if (carryFlag)
             {
-                // go to memory to find byte
-                //add the number in that byte to registter1
+                chosenByte++;
             }
-            else if (address == register2)
-            {
-                // go to memory to find byte
-                // add the number in that byte to register1
-            }
-            else
-            {
-                throw new Exception("Error: No register matches with address");
-            }
+            HandleADCFlags(register1, chosenByte);
+            register1 = chosenByte;
+        }
+
+        /// <summary>
+        /// This might be broken
+        /// </summary>
+        /// <param name="register1"></param>
+        /// <param name="register2"></param>
+        private void HandleADCFlags(ushort register1, ushort register2)
+        {
+            zeroFLag = register1 == 0;
+            subtractFlagN = false;
+            carryFlag = register1 + register2 > 0xFF;
+            HalfCarryFlag = (register1 & 0xF) + (register2 & 0xF) > 0xF;
         }
 
         /// <summary>
@@ -1055,6 +942,15 @@ namespace GameboyCPU
         private void ADD(ushort registerA, ushort registerB, ref ushort registerReference)
         {
             registerReference = (ushort)(registerA + registerB);
+            HandleADDFlags(registerA, registerB);
+        }
+
+        private void HandleADDFlags(ushort registerA, ushort registerB)
+        {
+            zeroFLag = registerA == 0;
+            subtractFlagN = false;
+            carryFlag = registerA + registerB > 0xFF;
+            HalfCarryFlag = (registerA & 0xF) + (registerB & 0xF) > 0xF;
         }
 
         /// <summary>
@@ -1076,21 +972,25 @@ namespace GameboyCPU
         {
             if (address == register1)
             {
+                if (isUpper)
+                    this.memoryMap.SetMemoryValue(address, (byte)(register2 >> 8));
+                else
+                    this.memoryMap.SetMemoryValue(address, (byte)(register2 & 0xFF));
                 // GO TO MEMORY
             }
             else if (address == register2)
             {
-                // GO TO MEMORY
+                var outcome = this.memoryMap.GetMemoryValue(address);
+
+                if (isUpper)
+                    register1 = (ushort)((register1 & 0x00FF) | outcome);
+                else
+                    register1 = (ushort)((register1 & 0xFF00) | outcome);
             }
             else
             {
                 throw new Exception("Error: No register matches with address");
             }
-
-            if (isUpper)
-                register1 = (ushort)((register1 & 0x00FF) | register2);
-            else
-                register1 = (ushort)((register1 & 0xFF00) | register2);
         }
 
         private void LD(ref ushort register1, ushort register2)
@@ -1098,15 +998,34 @@ namespace GameboyCPU
             register1 = register2;
         }
 
-        private void LD(ushort register1, ushort register2, ushort Address)
+        private void LD(ushort register1, ushort register2, ushort address)
         {
-            if (register1 == Address)
+            if (register1 == address)
             {
-                // access memory at this address and load register 2
+                this.memoryMap.SetMemoryValue(address, register1);
             }
-            else if (register2 == Address)
+            else if (register2 == address)
             {
+                var outcome = this.memoryMap.GetMemoryValue(address);
+                register1 = outcome;
+            }
+            else
+            {
+                throw new Exception("Error: No register matches with address");
+            }
 
+        }
+
+        private void LD(ushort register1, byte register2, ushort address)
+        {
+            if (register1 == address)
+            {
+                this.memoryMap.SetMemoryValue(address, register2);
+            }
+            else if (register2 == address)
+            {
+                var outcome = this.memoryMap.GetMemoryValue(address);
+                register1 = outcome;
             }
             else
             {
@@ -1114,14 +1033,10 @@ namespace GameboyCPU
             }
         }
 
-        private void LD(ushort register1, byte register2, ushort address)
-        {
-
-        }
-
         private void INC(ref ushort register)
         {
             register++;
+            SetINCFlags(register);
         }
 
         private void INC(ref ushort register, bool Upper)
@@ -1132,6 +1047,7 @@ namespace GameboyCPU
                 upperByte++;
 
                 register = (ushort)((register & (0x00FF)) | upperByte);
+                SetINCFlags(upperByte);
             }
             else
             {
@@ -1139,12 +1055,28 @@ namespace GameboyCPU
                 low++;
 
                 register = (ushort)((register & 0xFF00) | low);
+                SetINCFlags(low);
             }
+        }
+        private void INCReference(ushort register)
+        {
+            byte value = memoryMap.GetMemoryValue(register);
+            value++;
+            memoryMap.SetMemoryValue(register, value);
+            SetINCFlags(value);
+        }
+
+        private void SetINCFlags(ushort value)
+        {
+            zeroFLag = value == 0;
+            subtractFlagN = false;
+            HalfCarryFlag = (value & 0xF) == 0;
         }
 
         private void DEC(ref ushort register)
         {
             register--;
+            SetDECFlags(register);
         }
 
         private void DEC(ref ushort register, bool Upper)
@@ -1155,6 +1087,7 @@ namespace GameboyCPU
                 upperByte--;
 
                 register = (ushort)((register & (0x00FF)) | upperByte);
+                SetDECFlags(upperByte);
             }
             else
             {
@@ -1162,9 +1095,25 @@ namespace GameboyCPU
                 lowerByte--;
 
                 register = (ushort)((register & 0xFF00) | lowerByte);
-            }
+                SetDECFlags(lowerByte);
+            }        
         }
 
+        private void DECReference(ushort register)
+        {
+            byte value = memoryMap.GetMemoryValue(register);
+            value--;
+            memoryMap.SetMemoryValue(register, value);
+
+            SetDECFlags(value);    
+        } 
+
+        private void SetDECFlags(ushort value)
+        {
+            zeroFLag = value == 0;
+            subtractFlagN = true;
+            HalfCarryFlag = (value & 0xF) == 0xF;
+        }
         #endregion
     }
 }
