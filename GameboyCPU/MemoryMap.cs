@@ -62,6 +62,45 @@ namespace GameboyCPU
             }
         }
 
+        public ref byte GetMemoryValueAsRefrence(ushort address)
+        {
+            switch (address)
+            {
+                case <= 0x3FFF:
+                    return ref romFixedBank[address];
+
+                case <= 0x7FFF:
+                    return ref romSwitchableBank[address - 0x4000];
+
+                case <= 0x9FFF:
+                    return ref vram[address - 0x8000];
+
+                case <= 0xBFFF:
+                    return ref externalRam[address - 0xA000];
+
+                case <= 0xCFFF:
+                    return ref workRam[address - 0xC000];
+
+                case <= 0xDFFF:
+                    return ref workRamCGBOnly[address - 0xD000];
+
+                case <= 0xFDFF:
+                    return ref echoRam[address - 0xE000];
+
+                case <= 0xFE9F:
+                    return ref oam[address - 0xFE00];
+
+                case <= 0xFEFF:
+                    return ref notUsable[address - 0xFEA0];
+
+                case <= 0xFF7F:
+                    return ref ioPorts[address - 0xFF00];
+
+                case <= 0xFFFF:
+                    return ref highRam[address - 0xFF80];
+            }
+        }
+
         public void SetMemoryValue(ushort address, byte value)
         {
             switch (address)
