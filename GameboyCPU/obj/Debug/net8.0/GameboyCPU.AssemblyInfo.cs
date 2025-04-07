@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GameboyCPU")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fc523e3d9c2f2afaf3ff37bc651b637736a580b0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+648c554f7362663251373af8ddde332d9864cf70")]
 [assembly: System.Reflection.AssemblyProductAttribute("GameboyCPU")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GameboyCPU")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

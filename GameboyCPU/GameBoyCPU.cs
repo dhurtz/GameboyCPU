@@ -7,7 +7,7 @@ using System.Text.Json;
 namespace GameboyCPU
 {
 
-    public unsafe class GameBoyCPU
+    public class GameBoyCPU
     {
         public unsafe struct Registers
         {
@@ -32,11 +32,12 @@ namespace GameboyCPU
 
         private MemoryMap memoryMap;
 
-        private ushort programCounter = 0;
-
         public GameBoyCPU(MemoryMap memoryMap)
         {
             this.memoryMap = memoryMap;
+            registers = new Registers();
+            registers.registerPC = 0x01000; // Apparent start of first instruction for all games
+            instructionSet = new Dictionary<byte, Action>();
             InitializeInstructionSet();
         }
 
@@ -46,23 +47,23 @@ namespace GameboyCPU
             public ushort* instruction;
         }
 
-        public unsafe Registers registers = new Registers();
+        public unsafe Registers registers;
 
-        public unsafe Dictionary<byte, Action> instructionSet = new Dictionary<byte, Action>();
+        public unsafe Dictionary<byte, Action> instructionSet; 
 
         public unsafe void InitializeInstructionSet()
         {
             instructionSet[0x00] = NOP;
             instructionSet[0x01] = () => LD(ref registers.registerBC, FetchParameters16Bit());
-            instructionSet[0x02] = () => LD(registers.registerBC, (byte)registers.registerAF, registers.registerBC);
+            instructionSet[0x02] = () => LD(ref registers.registerBC, (byte)registers.registerAF, registers.registerBC);
             instructionSet[0x03] = () => INC(ref registers.registerBC);
             instructionSet[0x04] = () => INC(ref registers.registerBC, true);
             instructionSet[0x05] = () => DEC(ref registers.registerBC, true);
             instructionSet[0X06] = () => LD(ref registers.registerBC, FetchParameters8Bit(), true);
             instructionSet[0x07] = () => RLCA();
-            instructionSet[0x08] = () => LD(registers.registerAF, registers.registerSP, registers.registerAF);
+            instructionSet[0x08] = () => LD(ref registers.registerAF, registers.registerSP, registers.registerAF);
             instructionSet[0x09] = () => ADD(ref registers.registerHL, registers.registerBC);
-            instructionSet[0x0A] = () => LD(registers.registerAF, registers.registerBC, registers.registerBC);
+            instructionSet[0x0A] = () => LD(ref registers.registerAF, registers.registerBC, registers.registerBC);
             instructionSet[0x0B] = () => DEC(ref registers.registerBC);
             instructionSet[0x0C] = () => INC(ref registers.registerBC, false);
             instructionSet[0x0D] = () => DEC(ref registers.registerBC, false);
@@ -70,7 +71,7 @@ namespace GameboyCPU
             instructionSet[0x0F] = () => RRCA();
             instructionSet[0x10] = () => STOP();
             instructionSet[0x11] = () => LD(ref registers.registerDE, FetchParameters16Bit());
-            instructionSet[0x12] = () => LD(registers.registerDE, (byte) (registers.registerAF >> 8), registers.registerDE);
+            instructionSet[0x12] = () => LD(ref registers.registerDE, (byte) (registers.registerAF >> 8), registers.registerDE);
             instructionSet[0x13] = () => INC(ref registers.registerDE);
             instructionSet[0x14] = () => INC(ref registers.registerDE, true);
             instructionSet[0x15] = () => DEC(ref registers.registerDE, true);
@@ -86,7 +87,7 @@ namespace GameboyCPU
             instructionSet[0x1F] = () => RRA();
             instructionSet[0x20] = () => JRWithNC();
             instructionSet[0x21] = () => LD(ref registers.registerHL, FetchParameters16Bit());
-            instructionSet[0x22] = () => LD();
+            instructionSet[0x22] = () => LDWithHCIncrement(ref registers.registerHL, (byte)(registers.registerAF), registers.registerHL, false);
             instructionSet[0x23] = () => INC(ref registers.registerHL);
             instructionSet[0x24] = () => INC(ref registers.registerHL, true);
             instructionSet[0x25] = () => DEC(ref registers.registerHL, true);
@@ -94,7 +95,7 @@ namespace GameboyCPU
             instructionSet[0x27] = () => DAA();
             instructionSet[0x28] = () => JR(registers.registerBC, false);
             instructionSet[0x29] = () => ADD(ref registers.registerHL, registers.registerHL);
-            instructionSet[0x2A] = () => LD(ref registers.registerHL, FetchParameters16Bit(), registers.registerHL);
+            instructionSet[0x2A] = () => LDWithHCIncrement(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
             instructionSet[0x2B] = () => DEC(ref registers.registerHL);
             instructionSet[0x2C] = () => INC(ref registers.registerHL, false);
             instructionSet[0x2D] = () => DEC(ref registers.registerHL, false);
@@ -102,15 +103,15 @@ namespace GameboyCPU
             instructionSet[0x2F] = () => CPL();
             instructionSet[0x30] = () => JRWithNC();
             instructionSet[0x31] = () => LD(ref registers.registerSP, FetchParameters16Bit());
-            instructionSet[0x32] = () => LD(ref registers.registerHL, FetchParameters16Bit(), registers.registerHL);
+            instructionSet[0x32] = () => LDWithHCDecrement(ref registers.registerHL, (byte)(registers.registerAF), registers.registerHL, true); 
             instructionSet[0x33] = () => INC(ref registers.registerSP);
             instructionSet[0x34] = () => INC(ref registers.registerHL, true);
             instructionSet[0x35] = () => DECReference(registers.registerHL);
             instructionSet[0x36] = () => LD(ref registers.registerHL, FetchParameters8Bit(), true);
             instructionSet[0x37] = () => SCF();
-            instructionSet[0x38] = () => JRWithC();
+            instructionSet[0x38] = () => JRWithNC();
             instructionSet[0x39] = () => ADD(ref registers.registerHL, registers.registerSP);
-            instructionSet[0x3A] = () => LD(ref registers.registerAF, );
+            instructionSet[0x3A] = () => LDWithHCDecrement(ref registers.registerAF, registers.registerHL, registers.registerHL, true); 
             instructionSet[0x3B] = () => DEC(ref registers.registerSP);
             instructionSet[0x3C] = () => DEC(ref registers.registerAF, true);
             instructionSet[0x3D] = () => DEC(ref registers.registerHL, false);
@@ -244,50 +245,49 @@ namespace GameboyCPU
             instructionSet[0xBD] = () => CP(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
             instructionSet[0xBE] = () => CP(ref registers.registerAF, registers.registerHL, registers.registerHL, true); // compare with memory location
             instructionSet[0xBF] = () => CP(ref registers.registerAF, (byte)registers.registerAF, true); // compare with itself, should always be 0 and set flags accordingly
-            instructionSet[0xC0] = () => RET(NZ);
+            instructionSet[0xC0] = () => RET(!zeroFLag);
             instructionSet[0xC1] = () => POP(ref registers.registerBC); // Pop BC from stack
-            instructionSet[0xC2] = () => JP(ref registers.nz);
+            instructionSet[0xC2] = () => JP(!carryFlag, FetchParameters16Bit());
             instructionSet[0xC3] = () => JP(FetchParameters16Bit()); // Jump to address in PC
-            instructionSet[0xC4] = () => CALL(NZ, FetchParameters16Bit()); // Call if not zero flag is set
+            instructionSet[0xC4] = () => CALL(!zeroFLag, FetchParameters16Bit()); // Call if not zero flag is set
             instructionSet[0xC5] = () => PUSH(ref registers.registerBC); // Push BC onto stack
             instructionSet[0xC6] = () => ADD(ref registers.registerAF, FetchParameters8Bit(), true); // Add immediate value to A register
             instructionSet[0xC7] = () => RST(0x00); // Restart at 0x00
-            instructionSet[0xC8] = () => RET(Z); // Return if zero flag is set
+            instructionSet[0xC8] = () => RET(zeroFLag); // Return if zero flag is set
             instructionSet[0xC9] = () => RET(); // Unconditional return from subroutine
-            instructionSet[0xCA] = () => JP(Z, FetchParameters16Bit()); // Jump to address if zero flag is set
-            instructionSet[0xCB] = () => PREFIX();
-            instructionSet[0xCC] = () => CALL(Z, FetchParameters16Bit()); // Call if zero flag is set
+            instructionSet[0xCA] = () => JP(zeroFLag, FetchParameters16Bit()); // Jump to address if zero flag is set
+            //instructionSet[0xCB] = () => PREFIX();
+            instructionSet[0xCC] = () => CALL(zeroFLag, FetchParameters16Bit()); // Call if zero flag is set
             instructionSet[0xCD] = () => CALL(FetchParameters16Bit()); // Call subroutine at address in PC
             instructionSet[0xCE] = () => ADC(ref registers.registerAF, FetchParameters8Bit(), true); // Add with carry immediate value to A register
             instructionSet[0xCF] = () => RST(0x08); // Restart at 0x08, typically used for interrupts or specific routines
-            instructionSet[0xD0] = () => RET(NC); // Return if no carry flag is set
+            instructionSet[0xD0] = () => RET(!zeroFLag); // Return if no carry flag is set
             instructionSet[0xD1] = () => POP(ref registers.registerDE); // Pop DE from stack
-            instructionSet[0xD2] = () => JP(NC, FetchParameters16Bit()); // Jump to address if no carry flag is set
-            instructionSet[0xD4] = () => CALL(NC, FetchParameters16Bit()); // Call if no carry flag is set
+            instructionSet[0xD2] = () => JP(!carryFlag, FetchParameters16Bit()); // Jump to address if no carry flag is set
+            instructionSet[0xD4] = () => CALL(!carryFlag, FetchParameters16Bit()); // Call if no carry flag is set
             instructionSet[0xD5] = () => PUSH(ref registers.registerDE); // Push DE onto stack
             instructionSet[0xD6] = () => SUB(ref registers.registerAF, FetchParameters8Bit(), true); // Subtract immediate value from A register
             instructionSet[0xD7] = () => RST(0x10); // Restart at 0x10, typically used for interrupts or specific routines
-            instructionSet[0xD8] = () => RET(C); // Return if carry flag is set
+            instructionSet[0xD8] = () => RET(carryFlag); // Return if carry flag is set
             instructionSet[0xD9] = () => RET(); // Unconditional return from subroutine (this is a duplicate, should be removed)
-            instructionSet[0xDA] = () => JP(C, FetchParameters16Bit()); // Jump to address if carry flag is set
-            instructionSet[0xDC] = () => CALL(C, FetchParameters16Bit()); // Call if carry flag is set
+            instructionSet[0xDA] = () => JP(carryFlag, FetchParameters16Bit()); // Jump to address if carry flag is set
+            instructionSet[0xDC] = () => CALL(carryFlag, FetchParameters16Bit()); // Call if carry flag is set
             instructionSet[0xDE] = () => ADC(ref registers.registerAF, FetchParameters8Bit(), true); // Add with carry immediate value to A register
             instructionSet[0xDF] = () => RST(0x18); // Restart at 0x18, typically used for interrupts or specific routines
             instructionSet[0xE0] = () => LD(ref registers.registerAF, FetchParameters8Bit(), true); // Load immediate value into A register
             instructionSet[0xE1] = () => POP(ref registers.registerHL); // Pop HL from stack
-            instructionSet[0xE2] = () => LD(registers.registerAF, (byte)(registers.registerBC >> 8), registers.registerAF); // Load BC into A register
-            instructionSet[0xE3] = () => EX(ref registers.registerHL, ref registers.registerSP); // Exchange HL with stack pointer
+            instructionSet[0xE2] = () => LD(ref registers.registerAF, (byte)(registers.registerBC >> 8), registers.registerAF); // Load BC into A register
             instructionSet[0xE5] = () => PUSH(ref registers.registerHL); // Push HL onto stack
             instructionSet[0xE6] = () => AND(ref registers.registerAF, FetchParameters8Bit(), true); // AND immediate value with A register
             instructionSet[0xE7] = () => RST(0x20); // Restart at 0x20, typically used for interrupts or specific routines
-            instructionSet[0xE8] = () => ADD(ref registers.registerSP, (sbyte)FetchParameters8Bit()); // Add signed immediate value to stack pointer
+            instructionSet[0xE8] = () => ADD(ref registers.registerSP, FetchParameters8Bit()); // Add signed immediate value to stack pointer
             instructionSet[0xE9] = () => JP(registers.registerHL); // Jump to address in HL register
             instructionSet[0xEA] = () => LD(ref registers.registerAF, FetchParameters16Bit(), registers.registerAF); // Load immediate value into A register from address
             instructionSet[0xEE] = () => XOR(ref registers.registerAF, FetchParameters8Bit(), true); // XOR immediate value with A register
             instructionSet[0xEF] = () => RST(0x28); // Restart at 0x28, typically used for interrupts or specific routines
             instructionSet[0xF0] = () => LD(ref registers.registerAF, FetchParameters8Bit(), true); // Load immediate value into A register
             instructionSet[0xF1] = () => POP(ref registers.registerAF); // Pop AF from stack, typically used for restoring flags
-            instructionSet[0xF2] = () => LD(registers.registerAF, (byte)(registers.registerBC >> 8), registers.registerAF); // Load BC into A register
+            instructionSet[0xF2] = () => LD(ref registers.registerAF, (byte)(registers.registerBC >> 8), registers.registerAF); // Load BC into A register
             instructionSet[0xF3] = () => DI(); // Disable interrupts (set IMEFlag to false)
             instructionSet[0xF5] = () => PUSH(ref registers.registerAF); // Push AF onto stack, typically used for saving flags
             instructionSet[0xF6] = () => OR(ref registers.registerAF, FetchParameters8Bit(), true); // OR immediate value with A register
@@ -301,58 +301,179 @@ namespace GameboyCPU
 
         }
 
-
-        public unsafe void ReadInstruction(Instruction *instruction)
+        private void InitializePrefixSet()
         {
 
+        }
+
+        public void CPUMainLoop()
+        {
+            while (true)
+            {
+                byte opCode = ReadInstruction(registers.registerPC);
+                instructionSet[opCode](); // Execute the instruction based on the opcode
+            }
+        }
+
+        public byte ReadInstruction(ushort programCounter)
+        {
+            return this.memoryMap.GetMemoryValue(programCounter);
         }
 
         private ushort FetchParameters16Bit()
         {
-            return 0;
+            byte firstByte = this.memoryMap.GetMemoryValue((ushort)(registers.registerPC + 1));
+            byte secondByte = this.memoryMap.GetMemoryValue((ushort)(registers.registerPC + 2));
+
+            ushort value = (ushort)((secondByte << 8) | firstByte);
+            registers.registerPC += 2;
+            return value;
         }
 
         private byte FetchParameters8Bit()
         {
-            return 0;
+
+           var value = this.memoryMap.GetMemoryValue((ushort)(registers.registerPC + 1));
+            registers.registerPC++;
+            return value;
         }
 
         #region INSTRUCTION_FUNCTIONS
 
+        private void DI()
+        {
+            IMEFlag = false;
+            registers.registerPC++;
+        }
+
+        private void EI()
+        {
+            IMEFlag = true;
+            registers.registerPC++;
+        }
+
+        private void SCF()
+        {
+            carryFlag = true;
+            registers.registerPC++;
+        }
+
+        private void RST(byte address)
+        {
+            registers.registerPC++;
+        }
+
+        /// <summary>
+        /// This pushes the address of the instruction after the CALL on the stack, such that RET can pop it later; then, it executes an implicit JP n16.
+        /// </summary>
+        /// <param name="address"></param>
+        private void CALL(ushort address)
+        {
+            memoryMap.PushToStack((ushort)(registers.registerPC + 3)); 
+            registers.registerPC = address;
+        }
+
+        private void CALL(bool flag, ushort address)
+        {
+            if (flag)
+            {
+                CALL(address);
+            }
+            else
+            {
+                registers.registerPC++;
+            }
+        }
+
         private void NOP()
         {
-            return;
+            registers.registerPC++;
         }
 
-        private void RET(ushort address)
+        private void RET(bool flag)
         {
-
+            if (flag)
+            {
+                RET();
+            }
+            else
+            {
+                registers.registerPC++;
+            }
         }
 
+        private void RET()
+        {
+            registers.registerPC = memoryMap.PopFromStack16Bit();
+        }
+
+        // Pop the value from the stack into the register
+        // This would typically involve reading from memory where the stack pointer is pointing to
+        // and then incrementing the stack pointer.
         private void POP(ref ushort register)
         {
-            // Pop the value from the stack into the register
-            // This would typically involve reading from memory where the stack pointer is pointing to
-            // and then incrementing the stack pointer.
-            register = 0; // Placeholder for actual popped value
+            register = memoryMap.PopFromStack();
+            registers.registerPC++;
         }
 
+        private void SetPOPFlags(byte result)
+        {
+            // set zero flag if bit 7 is set
+            zeroFLag = result == 0;
+            // set subtract flag if bit 6 is set
+            subtractFlagN = (result & 0x20) != 0;
+            // set half carry flag if bit 5 is set
+            HalfCarryFlag = (result & 0x10) != 0;
+            // set carry flag if bit 4 is set
+            carryFlag = (result & 0x08) != 0;
+        }
+
+        private void PUSH(ref ushort register)
+        {
+            memoryMap.PushToStack(register);
+            registers.registerPC++;
+        }
         /// <summary>
         /// Halts the current game state and sets flags
         /// </summary>
         private void HALT()
         {
-            if (IMEFlag)
+
+        }
+        //{
+        //    if (IMEFlag)
+        //    {
+        //        // actually suspend the CPU;
+        //    }
+        //    else if (// no interrupts are enabled)
+        //    {
+        //        // do nothing
+        //    }
+        //    else
+        //    {
+        //        // CPU continues execution after halt but the byte after it is read twice in a row. PC is not incremented 
+        //    }
+        //    registers.registerPC++;
+        //}
+
+        /// <summary>
+        /// Jumps to address provided
+        /// </summary>
+        /// <param name="address"></param>
+        public void JP(ushort address)
+        {
+            registers.registerPC = address;
+        }
+
+        public void JP(bool flag, ushort address)
+        {
+            if (flag)
             {
-                // actually suspend the CPU;
-            }
-            else if (// no interrupts are enabled)
-            {
-                // do nothing
+                JP(address);
             }
             else
             {
-                // CPU continues execution after halt but the byte after it is read twice in a row. PC is not incremented 
+                registers.registerPC++;
             }
         }
 
@@ -377,6 +498,25 @@ namespace GameboyCPU
                 result = (byte)(chosenByte - register2);
             }
 
+            SetCPFlags(result, register1, register2);
+            registers.registerPC++;
+        }
+
+        private void CP(ref ushort register1, ushort register2, ushort address, bool isUpper)
+        {
+            byte chosenByte;
+            byte result;
+
+            if (isUpper)
+            {
+                chosenByte = (byte)(register1 >> 8);
+            }
+            else
+            {
+                chosenByte = (byte)(register1 & 0xFF);
+            }
+            var value = this.memoryMap.GetMemoryValue(address);
+            result = (byte)(value - chosenByte);
             SetCPFlags(result, register1, register2);
         }
 
@@ -411,6 +551,7 @@ namespace GameboyCPU
                 register1 = (ushort)((register1 & 0xFF00) | chosenByte);
             }
             SetORFlags(chosenByte);
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -438,6 +579,7 @@ namespace GameboyCPU
                 register1 = (ushort)((register1 & 0xFF00) | result);           
             }
             SetORFlags(result);
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -465,6 +607,7 @@ namespace GameboyCPU
                 register1 = (ushort)((register1 & 0xFF00) | result);
             }
             SetORFlags(result);
+            registers.registerPC++;
         }
 
         private void SetORFlags(ushort result)
@@ -487,6 +630,7 @@ namespace GameboyCPU
             registers.registerAF = (ushort)((registers.registerAF & (0xFF00)) | a);
             subtractFlagN = true;
             HalfCarryFlag = true;
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -529,6 +673,7 @@ namespace GameboyCPU
             }
             registers.registerAF = (ushort)((registers.registerAF & (0xFF00)) | a);
             SetDAAFlags(a);
+            registers.registerPC++;
         }
 
         private void SetDAAFlags(ushort result)
@@ -547,11 +692,11 @@ namespace GameboyCPU
             // jumps to the address provided in memory
             if (isUpper)
             {
-                programCounter += (ushort)(parameter >> 8);
+                registers.registerPC += (ushort)(parameter >> 8);
             }
             else
             {
-                programCounter += (ushort)(parameter & 0xFF);
+                registers.registerPC += (ushort)(parameter & 0xFF);
             }
         }
 
@@ -560,7 +705,7 @@ namespace GameboyCPU
         /// </summary>
         private void JRWithNC()
         {
-            byte NCBytes = (byte)(registers.registerAF)
+            byte NCBytes = (byte)(registers.registerAF);
             // jumps to the address provided in memory from NC bits which are the two first bits of the F register
         }
 
@@ -586,6 +731,7 @@ namespace GameboyCPU
                 register1 = (ushort)((register1 & 0xFF00) | chosenByte);
             }
             SetSUBFlags(chosenByte, register1, register2);
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -613,6 +759,7 @@ namespace GameboyCPU
                 register1 = (ushort)((register1 & 0xFF00) | result);
             }
             SetSUBFlags(result, chosenByte, register2);
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -640,6 +787,7 @@ namespace GameboyCPU
                 register1 = (ushort)((register1 & 0xFF00) | result);
             }
             SetSUBFlags(result, chosenByte, register2);
+            registers.registerPC++;
         }
 
         private void SetSUBFlags(ushort result, ushort register1, ushort register2)
@@ -672,6 +820,7 @@ namespace GameboyCPU
                 register1 = (ushort)((register1 & 0xFF00) | chosenByte);
             }
             register1 = chosenByte;
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -697,6 +846,7 @@ namespace GameboyCPU
                 var result = chosenByte & value;
                 register1 = (ushort)((register1 & 0xFF00) | result);
             }
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -722,6 +872,7 @@ namespace GameboyCPU
                 var result = chosenByte & value;
                 register1 = (ushort)((register1 & 0xFF00) | result);
             }
+            registers.registerPC++;
         }
 
         /// add function is wrong pls fix
@@ -736,14 +887,15 @@ namespace GameboyCPU
             {
                 register1 = (ushort)(memoryMap.GetMemoryValue(address) + register1);
             }
+            registers.registerPC++;
         }
 
         private void SetADDFlags(ushort result)
         {
             zeroFLag = result == 0;
-            HalfCarryFlag = false;
-            subtractFlagN = ;
-            carryFlag = false;
+            subtractFlagN = false;
+            HalfCarryFlag = (result & 0xF) > 0xF;
+            carryFlag = result > 0xFF;
         }
 
         /// <summary>
@@ -768,6 +920,7 @@ namespace GameboyCPU
                 register1 = (ushort)((register1 & 0xFF00) | chosenByte);
             }
             SetXORFlags(chosenByte);
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -794,6 +947,7 @@ namespace GameboyCPU
                 register1 = (ushort)((register1 & 0xFF00) | result);
             }
             SetXORFlags(chosenByte);
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -820,6 +974,7 @@ namespace GameboyCPU
                 register1 = (ushort)((register1 & 0xFF00) | result);
             }
             SetXORFlags(chosenByte);
+            registers.registerPC++;
         }
 
         private void SetXORFlags(ushort result)
@@ -864,6 +1019,7 @@ namespace GameboyCPU
                 register1 = (ushort)((register1 & 0xFF00) | chosenByte);
             }
             SetSBCFlags(chosenByte, register1, register2, false);
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -900,6 +1056,7 @@ namespace GameboyCPU
                 
             }
             SetSBCFlags(chosenByte, register1, register2, false);
+            registers.registerPC++;
         }
         
         /// <summary>
@@ -937,6 +1094,7 @@ namespace GameboyCPU
                 
             }
             SetSBCFlags(chosenByte, register1, register2, false);
+            registers.registerPC++;
         }
 
         private void  SetSBCFlags(ushort result, ushort register1, ushort register2, bool withCarry)
@@ -955,6 +1113,7 @@ namespace GameboyCPU
         private void ADD(ref ushort register1, ushort register2)
         {
             register1 = (ushort)(register1 + register2);
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -977,6 +1136,7 @@ namespace GameboyCPU
                 lowerByte += (byte)(register2 & 0xFF);
                 register1 = (ushort)((register1 & 0xFF00) | lowerByte);
             }
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1007,6 +1167,7 @@ namespace GameboyCPU
             {
                 throw new Exception("Error: No register matches with address");
             }
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1050,6 +1211,7 @@ namespace GameboyCPU
                 }
                 register1 = (ushort)((register1 & 0xFF00) | lowerByte);
             }
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1074,6 +1236,7 @@ namespace GameboyCPU
             }
 
             register1 = chosenByte;
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1098,6 +1261,7 @@ namespace GameboyCPU
             }
             HandleADCFlags(register1, chosenByte);
             register1 = chosenByte;
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1133,6 +1297,7 @@ namespace GameboyCPU
             HalfCarryFlag = false;
 
             registers.registerAF = (ushort)((registers.registerAF & (0xFF00)) | a);
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1156,6 +1321,7 @@ namespace GameboyCPU
             HalfCarryFlag = false;
 
             registers.registerAF = (ushort)((registers.registerAF & (0xFF00)) | a);
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1179,10 +1345,12 @@ namespace GameboyCPU
             HalfCarryFlag = false;
 
             registers.registerAF = (ushort)((registers.registerAF & (0x00FF)) | a);
+            registers.registerPC++; 
         }
 
         private void STOP()
         {
+            registers.registerPC += 2;
             //from pandocs
             /*
             * Enter CPU very low power mode. Also used to switch between GBC double speed and normal speed CPU modes.
@@ -1211,6 +1379,7 @@ namespace GameboyCPU
             HalfCarryFlag = false;
 
             registers.registerAF = (ushort)((registers.registerAF & (0x00FF)) | a);
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1226,7 +1395,67 @@ namespace GameboyCPU
                 register1 = (ushort)((register1 & 0x00FF) | register2);
             else
                 register1 = (ushort)((register1 & 0xFF00) | register2);
+            registers.registerPC++;
         }
+
+        private void LDWithHCIncrement(ref ushort register1, ushort register2 , ushort address, bool hasUpper)
+        {
+            ushort value;
+            if (hasUpper)
+            {
+                value = (ushort)(register1 >> 8);
+            }
+            else
+            {
+                value = register1;
+            }
+
+            if (address == register1)
+            {
+                this.memoryMap.SetMemoryValue(address, register2);
+                register1++;
+            }
+            else if (address == register2)
+            {
+                var outcome = this.memoryMap.GetMemoryValue(address);
+                register1 = (ushort)((value & 0x00FF) | outcome);
+                register2++;
+            }
+            else
+            {
+                throw new Exception("Error: No register matches with address");
+            }
+        }
+
+        private void LDWithHCDecrement(ref ushort register1, ushort register2 , ushort address, bool hasUpper)
+        {
+            ushort value;
+            if (hasUpper)
+            {
+                value = (ushort)(register1 >> 8);
+            }
+            else
+            {
+                value = register1;
+            }
+
+            if (address == register1)
+            {
+                this.memoryMap.SetMemoryValue(address, register2);
+                register1++;
+            }
+            else if (address == register2)
+            {
+                var outcome = this.memoryMap.GetMemoryValue(address);
+                register1 = (ushort)((value & 0x00FF) | outcome);
+                register2++;
+            }
+            else
+            {
+                throw new Exception("Error: No register matches with address");
+            }
+        }
+
 
         /// <summary>
         /// Loads data from register 2 into the data at the memory location register 1 points too
@@ -1260,6 +1489,7 @@ namespace GameboyCPU
             {
                 throw new Exception("Error: No register matches with address");
             }
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1270,6 +1500,7 @@ namespace GameboyCPU
         private void LD(ref ushort register1, ushort register2)
         {
             register1 = register2;
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1279,7 +1510,7 @@ namespace GameboyCPU
         /// <param name="register2"></param>
         /// <param name="address"></param>
         /// <exception cref="Exception"></exception>
-        private void LD(ushort register1, ushort register2, ushort address)
+        private void LD(ref ushort register1, ushort register2, ushort address)
         {
             if (register1 == address)
             {
@@ -1294,7 +1525,7 @@ namespace GameboyCPU
             {
                 throw new Exception("Error: No register matches with address");
             }
-
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1304,7 +1535,7 @@ namespace GameboyCPU
         /// <param name="register2"></param>
         /// <param name="address"></param>
         /// <exception cref="Exception"></exception>
-        private void LD(ushort register1, byte register2, ushort address)
+        private void LD(ref ushort register1, byte register2, ushort address)
         {
             if (register1 == address)
             {
@@ -1319,6 +1550,7 @@ namespace GameboyCPU
             {
                 throw new Exception("Error: No register matches with address");
             }
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1329,6 +1561,7 @@ namespace GameboyCPU
         {
             register++;
             SetINCFlags(register);
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1354,6 +1587,7 @@ namespace GameboyCPU
                 register = (ushort)((register & 0xFF00) | low);
                 SetINCFlags(low);
             }
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1366,6 +1600,7 @@ namespace GameboyCPU
             value++;
             memoryMap.SetMemoryValue(register, value);
             SetINCFlags(value);
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1387,6 +1622,7 @@ namespace GameboyCPU
         {
             register--;
             SetDECFlags(register);
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1411,7 +1647,8 @@ namespace GameboyCPU
 
                 register = (ushort)((register & 0xFF00) | lowerByte);
                 SetDECFlags(lowerByte);
-            }        
+            }
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1424,7 +1661,8 @@ namespace GameboyCPU
             value--;
             memoryMap.SetMemoryValue(register, value);
 
-            SetDECFlags(value);    
+            SetDECFlags(value);
+            registers.registerPC++;
         }
 
         /// <summary>
@@ -1437,6 +1675,10 @@ namespace GameboyCPU
             subtractFlagN = true;
             HalfCarryFlag = (value & 0xF) == 0xF;
         }
+        #endregion
+
+        #region PREFIXFUNCTIONS
+
         #endregion
     }
 }

@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics.X86;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -16,7 +17,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GameboyCPU
 {
-    public unsafe class GameCartridge
+    public class GameCartridge
     {
         public unsafe struct GameHeader
         {
@@ -45,20 +46,21 @@ namespace GameboyCPU
 
         private MemoryMap memoryMap;
 
+        public string[] Rom_Types;
+        public string[] Cartridge_Type;
+        public string[] OldLicenseeTypes; 
+
         public GameCartridge(string pathToCart, MemoryMap memoryMap)
         {
-            CartLoad(pathToCart); // Load the cartridge data into memory (stub for now, implement actual loading logic)
+            Rom_Types = new string[0x100];
+            Cartridge_Type = new string[0x100];
+            OldLicenseeTypes = new string[0x100];
             this.memoryMap = memoryMap;
+            CartLoad(pathToCart); // Load the cartridge data into memory (stub for now, implement actual loading logic)
             InitializeCartridgeTypes();
             InitializeRomTypes();
             InitializeOldLicenseeTypes();
         }
-
-        public string[] Rom_Types = new string[0xA5];
-
-        public string[] Cartridge_Type = new string[0xFF];
-
-        public string[] OldLicenseeTypes = new string[0xFF];
 
         public void InitializeCartridgeTypes()
         {
@@ -377,8 +379,19 @@ namespace GameboyCPU
 
         public static string[] LicenseeCodes = new string[0xA5];
 
-        public static unsafe bool CartLoad(string cart)
+        public unsafe bool CartLoad(string cart)
         {
+            // We're go ing to find the path to the ROM and load that memory into our struct, then load that struct into the memory map
+            var data = File.ReadAllBytes(cart);
+
+            if (data.Length < 0x150)
+            {
+                return false;
+            }
+            for (int i = 0; i < memoryMap.romFixedBank.Length; i++)
+            {
+                memoryMap.romFixedBank[i] = data[i];
+            } 
             return true;
         }
     }

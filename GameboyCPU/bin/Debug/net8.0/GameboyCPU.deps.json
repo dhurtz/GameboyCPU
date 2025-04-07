@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "GameboyCPU/1.0.0": {
+        "runtime": {
+          "GameboyCPU.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "GameboyCPU/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

@@ -3,3 +3,13 @@ C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\obj\Debug\net8.0\GameboyCPU.A
 C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\obj\Debug\net8.0\GameboyCPU.AssemblyInfo.cs
 C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\obj\Debug\net8.0\GameboyCPU.csproj.CoreCompileInputs.cache
 C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\obj\Debug\net8.0\GameboyCPU.sourcelink.json
+C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\bin\Debug\net8.0\GameboyCPU.exe
+C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\bin\Debug\net8.0\GameboyCPU.deps.json
+C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\bin\Debug\net8.0\GameboyCPU.runtimeconfig.json
+C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\bin\Debug\net8.0\GameboyCPU.dll
+C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\bin\Debug\net8.0\GameboyCPU.pdb
+C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\obj\Debug\net8.0\GameboyCPU.dll
+C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\obj\Debug\net8.0\refint\GameboyCPU.dll
+C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\obj\Debug\net8.0\GameboyCPU.pdb
+C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\obj\Debug\net8.0\GameboyCPU.genruntimeconfig.cache
+C:\Users\Dustin\source\repos\GameboyCPU\GameboyCPU\obj\Debug\net8.0\ref\GameboyCPU.dll

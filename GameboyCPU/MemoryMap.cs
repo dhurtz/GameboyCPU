@@ -9,20 +9,67 @@ namespace GameboyCPU
     public class MemoryMap
     {
 
-        public byte[] romFixedBank = new byte[0x4000];
-        public byte[] romSwitchableBank = new byte[0x4000]; // 16 banks of 16KB each, only one can be mapped at a time
-        public byte[] vram = new byte[0x2000];
-        public byte[] externalRam = new byte[0x2000]; // 8KB of external RAM, can be accessed when MBC is enabled
-        public byte[] workRam = new byte[0x100]; // 8KB of internal RAM, can be accessed when MBC is enabled
-        public byte[] workRamCGBOnly = new byte[0x100];
-        public byte[] echoRam = new byte[0x1E];
-        public byte[] oam = new byte[0xA0]; // Object Attribute Memory (Sprite data)
-        public byte[] notUsable = new byte[0x60]; // Not usable memory area (0xFEA0 - 0xFEFF)
-        public byte[] ioPorts = new byte[0x80]; // I/O Ports (0xFF00 - 0xFF7F)
-        public byte[] highRam = new byte[0x7F]; // High RAM (0xFF80 - 0xFFFF), also known as HRAM
+        public MemoryMap()
+        {
+            romFixedBank = new byte[0x4000];
+            romSwitchableBank = new byte[0x4000]; // 16 banks of 16KB each, only one can be mapped at a time
+            vram = new byte[0x2000];
+            externalRam = new byte[0x2000]; // 8KB of external RAM, can be accessed when MBC is enabled
+            workRam = new byte[0x100]; // 8KB of internal RAM, can be accessed when MBC is enabled
+            workRamCGBOnly = new byte[0x100];
+            echoRam = new byte[0x1E];
+            oam = new byte[0xA0]; // Object Attribute Memory (Sprite data)
+            notUsable = new byte[0x60]; // Not usable memory area (0xFEA0 - 0xFEFF)
+            ioPorts = new byte[0x80]; // I/O Ports (0xFF00 - 0xFF7F)
+            highRam = new byte[0x7F]; // High RAM (0xFF80 - 0xFFFF), also known as HRAM
+        }
+
+        public byte[] romFixedBank;
+        public byte[] romSwitchableBank;
+        public byte[] vram;
+        public byte[] externalRam;
+        public byte[] workRam; 
+        public byte[] workRamCGBOnly;
+        public byte[] echoRam;
+        public byte[] oam; // Object Attribute Memory (Sprite data)
+        public byte[] notUsable; // Not usable memory area (0xFEA0 - 0xFEFF)
+        public byte[] ioPorts; // I/O Ports (0xFF00 - 0xFF7F)
+        public byte[] highRam; // High RAM (0xFF80 - 0xFFFF), also known as HRAM
 
         byte inerruptEnableRegister = 0; // Interrupt Enable Register (IE) at 0xFFFF
-    
+
+        public byte StackPointer;
+
+        public void PushToStack(byte value)
+        {
+            highRam[StackPointer] = value;
+            StackPointer++;
+        }
+
+        public void PushToStack(ushort value)
+        {
+            highRam[StackPointer] = (byte)(value & 0x00FF);
+            StackPointer++;
+            highRam[StackPointer] = (byte)((value & 0xFF00) >> 8);
+            StackPointer++;
+        }
+       
+        public ushort PopFromStack16Bit()
+        {
+            byte upperByte = highRam[StackPointer];
+            StackPointer--;
+            byte lowerByte = highRam[StackPointer];
+            StackPointer--;
+            return (ushort)((upperByte << 8) | lowerByte);
+        }
+
+        public byte PopFromStack()
+        {
+            var value = highRam[StackPointer];
+            StackPointer--;
+            return value;
+        }
+
         public byte GetMemoryValue(ushort address)
         {
             switch(address)
@@ -280,7 +327,11 @@ namespace GameboyCPU
                     ioPorts[address - 0xFF00] += lowerByte;
                     ioPorts[address - 0xFF00 + 1] += upperByte;
                     break;
-                case
+                case <= 0xFFFF:
+                    highRam[address - 0xFF80] += lowerByte;
+                    highRam[address - 0xFF80 + 1] += upperByte;
+                    break;
+            }
         }
     }
 }
