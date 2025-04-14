@@ -8,6 +8,6 @@ class MainClass
     {
         Console.WriteLine("Hello, World!");
         GameBoy gameBoy = new GameBoy();
-        gameBoy.Run();
+        gameBoy.RunCPUTests();
     }
 }

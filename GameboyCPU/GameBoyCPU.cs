@@ -15,7 +15,7 @@ namespace GameboyCPU
             public ushort registerBC;
             public ushort registerDE;
             public ushort registerHL;
-            
+
             public ushort registerSP;
             public ushort registerPC;
         }
@@ -49,7 +49,7 @@ namespace GameboyCPU
 
         public unsafe Registers registers;
 
-        public unsafe Dictionary<byte, Action> instructionSet; 
+        public unsafe Dictionary<byte, Action> instructionSet;
 
         public unsafe void InitializeInstructionSet()
         {
@@ -71,7 +71,7 @@ namespace GameboyCPU
             instructionSet[0x0F] = () => RRCA();
             instructionSet[0x10] = () => STOP();
             instructionSet[0x11] = () => LD(ref registers.registerDE, FetchParameters16Bit());
-            instructionSet[0x12] = () => LD(ref registers.registerDE, (byte) (registers.registerAF >> 8), registers.registerDE);
+            instructionSet[0x12] = () => LD(ref registers.registerDE, (byte)(registers.registerAF >> 8), registers.registerDE);
             instructionSet[0x13] = () => INC(ref registers.registerDE);
             instructionSet[0x14] = () => INC(ref registers.registerDE, true);
             instructionSet[0x15] = () => DEC(ref registers.registerDE, true);
@@ -103,7 +103,7 @@ namespace GameboyCPU
             instructionSet[0x2F] = () => CPL();
             instructionSet[0x30] = () => JRWithNC();
             instructionSet[0x31] = () => LD(ref registers.registerSP, FetchParameters16Bit());
-            instructionSet[0x32] = () => LDWithHCDecrement(ref registers.registerHL, (byte)(registers.registerAF), registers.registerHL, true); 
+            instructionSet[0x32] = () => LDWithHCDecrement(ref registers.registerHL, (byte)(registers.registerAF), registers.registerHL, true);
             instructionSet[0x33] = () => INC(ref registers.registerSP);
             instructionSet[0x34] = () => INC(ref registers.registerHL, true);
             instructionSet[0x35] = () => DECReference(registers.registerHL);
@@ -111,7 +111,7 @@ namespace GameboyCPU
             instructionSet[0x37] = () => SCF();
             instructionSet[0x38] = () => JRWithNC();
             instructionSet[0x39] = () => ADD(ref registers.registerHL, registers.registerSP);
-            instructionSet[0x3A] = () => LDWithHCDecrement(ref registers.registerAF, registers.registerHL, registers.registerHL, true); 
+            instructionSet[0x3A] = () => LDWithHCDecrement(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
             instructionSet[0x3B] = () => DEC(ref registers.registerSP);
             instructionSet[0x3C] = () => DEC(ref registers.registerAF, true);
             instructionSet[0x3D] = () => DEC(ref registers.registerHL, false);
@@ -312,6 +312,7 @@ namespace GameboyCPU
             {
                 byte opCode = ReadInstruction(registers.registerPC);
                 instructionSet[opCode](); // Execute the instruction based on the opcode
+                Console.WriteLine($"Executed instruction: {opCode:X2} at PC: {registers.registerPC:X4}");
             }
         }
 
@@ -333,7 +334,7 @@ namespace GameboyCPU
         private byte FetchParameters8Bit()
         {
 
-           var value = this.memoryMap.GetMemoryValue((ushort)(registers.registerPC + 1));
+            var value = this.memoryMap.GetMemoryValue((ushort)(registers.registerPC + 1));
             registers.registerPC++;
             return value;
         }
@@ -369,7 +370,7 @@ namespace GameboyCPU
         /// <param name="address"></param>
         private void CALL(ushort address)
         {
-            memoryMap.PushToStack((ushort)(registers.registerPC + 3)); 
+            memoryMap.PushToStack((ushort)(registers.registerPC + 3));
             registers.registerPC = address;
         }
 
@@ -536,20 +537,22 @@ namespace GameboyCPU
         /// <param name="isUpper"></param>
         private void OR(ref ushort register1, byte register2, bool isUpper)
         {
+            byte lowerByte = (byte)(register1 & 0xFF);
+            byte upperByte = (byte)(register1 >> 8);
+
             byte chosenByte;
 
             if (isUpper)
             {
-                chosenByte = (byte)(register1 >> 8);
-                chosenByte |= (byte)(register2 >> 8);
-                register1 = (ushort)((register1 & 0x00FF) | chosenByte);
+                upperByte = (byte)(upperByte | register2);
+                chosenByte = upperByte;
             }
             else
             {
-                chosenByte = (byte)(register1 & 0xFF);
-                chosenByte |= (byte)(register2 & 0xFF);
-                register1 = (ushort)((register1 & 0xFF00) | chosenByte);
+                lowerByte = (byte)(lowerByte | register2);
+                chosenByte = lowerByte;
             }
+            register1 = (ushort)((upperByte << 8) | lowerByte);
             SetORFlags(chosenByte);
             registers.registerPC++;
         }
@@ -574,9 +577,9 @@ namespace GameboyCPU
             }
             else
             {
-                chosenByte = (byte)(register1 & 0xFF); 
+                chosenByte = (byte)(register1 & 0xFF);
                 result = (byte)(chosenByte | value);
-                register1 = (ushort)((register1 & 0xFF00) | result);           
+                register1 = (ushort)((register1 & 0xFF00) | result);
             }
             SetORFlags(result);
             registers.registerPC++;
@@ -593,7 +596,7 @@ namespace GameboyCPU
         {
             var value = this.memoryMap.GetMemoryValue(address);
             byte chosenByte;
-            byte result = 0;            
+            byte result = 0;
             if (isUpper)
             {
                 chosenByte = (byte)(register1 >> 8);
@@ -717,19 +720,22 @@ namespace GameboyCPU
         /// <param name="isUpper"></param>
         private void SUB(ref ushort register1, byte register2, bool isUpper)
         {
-            byte chosenByte = 0;
+            byte upperByte = (byte)(register1 >> 8);
+            byte lowerByte = (byte)(register1 & 0xFF);
+
+            byte chosenByte;
             if (isUpper)
             {
-                chosenByte = (byte)(register1 >> 8);
-                chosenByte -= (byte)(register2 >> 8);
-                register1 = (ushort)((register1 & 0x00FF) | chosenByte);
+                upperByte -= (byte)(register2);
+                chosenByte = upperByte;
             }
             else
             {
-                chosenByte = (byte)(register1 & 0xFF);
-                chosenByte -= (byte)(register2 & 0xFF);
-                register1 = (ushort)((register1 & 0xFF00) | chosenByte);
+                lowerByte -= register2;
+                chosenByte = lowerByte;
             }
+
+            register1 = (ushort)((upperByte << 8) | lowerByte);
             SetSUBFlags(chosenByte, register1, register2);
             registers.registerPC++;
         }
@@ -804,22 +810,23 @@ namespace GameboyCPU
         /// <param name="register1"></param>
         /// <param name="register2"></param>
         /// <param name="isUpper"></param>
-        private void AND(ref ushort register1, ushort register2, bool isUpper)
+        private void AND(ref ushort register1, byte register2, bool isUpper)
         {
+            byte upperByte = (byte)(register1 >> 8);
+            byte lowerByte = (byte)(register1 & 0xFF);
+
             ushort chosenByte;
             if (isUpper)
             {
-                chosenByte = (byte)(register1 >> 8);
-                chosenByte &= register2;
-                register1 = (ushort)((register1 & 0x00FF) | chosenByte);
+                upperByte &= register2;
+                chosenByte = upperByte;
             }
             else
             {
-                chosenByte = (byte)(register1 & 0xFF);
-                chosenByte &= register2;
-                register1 = (ushort)((register1 & 0xFF00) | chosenByte);
+                lowerByte &= register2;
+                chosenByte = lowerByte;
             }
-            register1 = chosenByte;
+            register1 = (ushort)((upperByte << 8) | lowerByte);
             registers.registerPC++;
         }
 
@@ -904,21 +911,23 @@ namespace GameboyCPU
         /// <param name="register1"></param>
         /// <param name="register2"></param>
         /// <param name="isUpper"></param>
-        private void XOR(ref ushort register1, ushort register2, bool isUpper)
+        private void XOR(ref ushort register1, byte register2, bool isUpper)
         {
+            byte upperByte = (byte)(register1 >> 8);
+            byte lowerByte = (byte)(register1 & 0xFF);
             ushort chosenByte;
+
             if (isUpper)
             {
-                chosenByte = (byte)(register1 >> 8);
-                chosenByte ^= (byte)(register2 >> 8);
-                register1 = (ushort)((register1 & 0x00FF) | chosenByte);
+                upperByte ^= register2;
+                chosenByte = lowerByte;
             }
             else
             {
-                chosenByte = (byte)(register1 & 0xFF);
-                chosenByte ^= (byte)(register2 & 0xFF);
-                register1 = (ushort)((register1 & 0xFF00) | chosenByte);
+                lowerByte ^= register2; 
+                chosenByte = lowerByte;
             }
+            register1 = (ushort)((upperByte << 8) | lowerByte);
             SetXORFlags(chosenByte);
             registers.registerPC++;
         }
@@ -1053,12 +1062,12 @@ namespace GameboyCPU
                     SetSBCFlags(chosenByte, register1, register2, true);
                     return;
                 }
-                
+
             }
             SetSBCFlags(chosenByte, register1, register2, false);
             registers.registerPC++;
         }
-        
+
         /// <summary>
         /// Subtract the value of the second register from the first register including the carry flag
         /// </summary>
@@ -1091,13 +1100,13 @@ namespace GameboyCPU
                     SetSBCFlags(chosenByte, register1, register2, true);
                     return;
                 }
-                
+
             }
             SetSBCFlags(chosenByte, register1, register2, false);
             registers.registerPC++;
         }
 
-        private void  SetSBCFlags(ushort result, ushort register1, ushort register2, bool withCarry)
+        private void SetSBCFlags(ushort result, ushort register1, ushort register2, bool withCarry)
         {
             zeroFLag = result == 0;
             subtractFlagN = true;
@@ -1124,18 +1133,20 @@ namespace GameboyCPU
         /// <param name="isUpper"></param>
         private void ADD(ref ushort register1, ushort register2, bool isUpper)
         {
+            byte upperByte = (byte)(register1 >> 8);
+            byte lowerByte = (byte)(register1 & 0xFF);
+
             if (isUpper)
             {
-                byte upperByte = (byte)(register1 >> 8);
-                upperByte += (byte)(register2 >> 8);
-                register1 = (ushort)((register1 & 0x00FF) | upperByte);
+                upperByte += (byte)(register2);
             }
             else
             {
-                byte lowerByte = (byte)(register1 & 0xFF);
-                lowerByte += (byte)(register2 & 0xFF);
-                register1 = (ushort)((register1 & 0xFF00) | lowerByte);
+                lowerByte += (byte)(register2);
             }
+
+            register1 = (ushort)((upperByte << 8) | lowerByte);
+
             registers.registerPC++;
         }
 
@@ -1345,7 +1356,7 @@ namespace GameboyCPU
             HalfCarryFlag = false;
 
             registers.registerAF = (ushort)((registers.registerAF & (0x00FF)) | a);
-            registers.registerPC++; 
+            registers.registerPC++;
         }
 
         private void STOP()
@@ -1398,7 +1409,7 @@ namespace GameboyCPU
             registers.registerPC++;
         }
 
-        private void LDWithHCIncrement(ref ushort register1, ushort register2 , ushort address, bool hasUpper)
+        private void LDWithHCIncrement(ref ushort register1, ushort register2, ushort address, bool hasUpper)
         {
             ushort value;
             if (hasUpper)
@@ -1427,7 +1438,7 @@ namespace GameboyCPU
             }
         }
 
-        private void LDWithHCDecrement(ref ushort register1, ushort register2 , ushort address, bool hasUpper)
+        private void LDWithHCDecrement(ref ushort register1, ushort register2, ushort address, bool hasUpper)
         {
             ushort value;
             if (hasUpper)
@@ -1571,25 +1582,25 @@ namespace GameboyCPU
         /// <param name="Upper"></param>
         private void INC(ref ushort register, bool Upper)
         {
+            byte upperByte = (byte)(register >> 8);
+            byte lowerByte = (byte)(register & 0xFF);
+
+
             if (Upper)
             {
-                byte upperByte = (byte)(register >> 8);
                 upperByte++;
-
-                register = (ushort)((register & (0x00FF)) | upperByte);
-                SetINCFlags(upperByte);
+                SetDECFlags(upperByte);
             }
             else
             {
-                byte low = (byte)(register & 0xFF);
-                low++;
-
-                register = (ushort)((register & 0xFF00) | low);
-                SetINCFlags(low);
+                lowerByte++;
+                SetDECFlags(lowerByte);
             }
+
+            register = (ushort)((upperByte << 8) | lowerByte);
             registers.registerPC++;
         }
-
+        
         /// <summary>
         /// Increments the value at the memory location
         /// </summary>
@@ -1632,22 +1643,22 @@ namespace GameboyCPU
         /// <param name="Upper"></param>
         private void DEC(ref ushort register, bool Upper)
         {
+            byte upperByte = (byte)(register >> 8);
+            byte lowerByte = (byte)(register & 0xFF);
+
+
             if (Upper)
             {
-                byte upperByte = (byte)(register >> 8);
                 upperByte--;
-
-                register = (ushort)((register & (0x00FF)) | upperByte);
                 SetDECFlags(upperByte);
             }
             else
             {
-                byte lowerByte = (byte)(register & 0xFF);
                 lowerByte--;
-
-                register = (ushort)((register & 0xFF00) | lowerByte);
                 SetDECFlags(lowerByte);
             }
+
+            register = (ushort)((upperByte << 8) | lowerByte);
             registers.registerPC++;
         }
 
@@ -1680,5 +1691,168 @@ namespace GameboyCPU
         #region PREFIXFUNCTIONS
 
         #endregion
+
+        #region TESTFUNCTIONS
+
+        public void TestInstructionSet()
+        {
+            TestDEC();
+            Console.WriteLine("DEC test passed");
+            TestINC();
+            Console.WriteLine("INC test passed");
+            TestADD();
+            Console.WriteLine("ADD test passed");
+            TestSUB();
+            Console.WriteLine("SUB test passed");
+            TestXOR();
+            Console.WriteLine("XOR test passed");
+            TestAND();
+            Console.WriteLine("AND test passed");
+            TestOR();
+            Console.WriteLine("OR test passed");
+        }
+
+        private void TestDEC()
+        {
+            ushort register = 0xFF;
+            DEC(ref register);
+            if (register != 0xFE)
+            {
+                throw new Exception("DEC failed");
+            }
+            register = 0b1001000000000000;
+            DEC(ref register, true);
+            if (register != 0b1000111100000000)
+            {
+                throw new Exception("DEC failed");
+            }
+
+            register = 0b0000000000000001;
+            DEC(ref register, false);
+            if (register != 0x0)
+            {
+                throw new Exception("DEC failed");
+            }
+
+        }
+
+        private void TestINC()
+        {
+            ushort register = 0x00;
+            INC(ref register);
+            if (register != 0x01)
+            {
+                throw new Exception("INC failed" + "  Expected: 0x01  Recieved:" + register);
+            }
+            register = 0b0000000000000000;
+            INC(ref register, true);
+            if (register != 0b000000100000000)
+            {
+                string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
+                throw new Exception("INC failed" + "  Expected: 0x10100000  Recieved:" + binaryConversion);
+            }
+            register = 0x0;
+            INC(ref register, false); 
+            if (register != 0x1)
+            {
+                throw new Exception("INC failed" + "  Expected: 0x02  Recieved:" + register);
+            }
+        }
+
+
+        private void TestADD()
+        {
+            ushort register = 0xFE;
+            ADD(ref register, 0x01);
+            if (register != 0xFF)
+            {
+                throw new Exception("ADD failed");
+            }
+            register = 0x00;
+            ADD(ref register, 0x01, true);
+            if (register != 0b0000000100000000)
+            {
+                throw new Exception("ADD failed");
+            }
+            register = 0x00;
+            ADD(ref register, 0x01, false);
+            if (register != 0x01)
+            {
+                throw new Exception("ADD failed");
+            }
+        }
+
+        private void TestSUB()
+        {
+            ushort register = 0xFFFF;
+            SUB(ref register, 0x01, true);
+            if (register != 0b1111111011111111)
+            {
+                string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
+                throw new Exception("SUB failed expected: 0b1111101111111111 recieved: " + binaryConversion);
+            }
+            register = 0xFFFF;
+            SUB(ref register, 0x01, false);
+            if (register != 0b1111111111111110)
+            {
+                string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
+                throw new Exception("SUB failed expected: 0b1111111111111110 recieved: " + binaryConversion);
+            }
+        }
+
+        private void TestXOR()
+        {
+            ushort register = 0xFFFF;
+            XOR(ref register, 0x01, true);
+            if (register != 0b1111111011111111)
+            {
+                string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
+                throw new Exception("XOR failed expected: 0b1111101111111111 recieved: " + binaryConversion);
+            }
+            register = 0xFFFF;
+            XOR(ref register, 0x01, false);
+            if (register != 0b1111111111111110)
+            {
+                string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
+                throw new Exception("XOR failed expected: 0b1111111111111110 recieved: " + binaryConversion);
+            }
+        }
+
+        public void TestAND()
+        {
+            ushort register = 0xFFFF;
+            AND(ref register, 0x01, true);
+            if (register != 0b0000000111111111)
+            {
+                string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
+                throw new Exception("AND failed expected: 0b0000000100000001 recieved: " + binaryConversion);
+            }
+            register = 0xFFFF;
+            AND(ref register, 0x01, false);
+            if (register != 0b1111111100000001)
+            {
+                string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
+                throw new Exception("AND failed expected: 0b1111111100000001 recieved: " + binaryConversion);
+            }
+            #endregion
+        }
+
+        public void TestOR()
+        {
+            ushort register = 0x0;
+            OR(ref register, 0x01, true);
+            if (register != 0b0000000100000000)
+            {
+                string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
+                throw new Exception("OR failed expected: 0b0000000100000000 recieved: " + binaryConversion);
+            }
+            register = 0x0;
+            OR(ref register, 0x01, false);
+            if (register != 0b0000000000000001)
+            {
+                string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
+                throw new Exception("OR failed expected: 0b0000000000000001 recieved: " + binaryConversion);
+            }
+        }
     }
 }

@@ -7,8 +7,8 @@
       "RelativeMoniker": "D:0:0:{9A83393D-4139-4175-9058-FC3476FE3C4D}|GameboyCPU\\GameboyCPU.csproj|solutionrelative:gameboycpu\\gameboycpu.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{9A83393D-4139-4175-9058-FC3476FE3C4D}|GameboyCPU\\GameboyCPU.csproj|c:\\users\\dustin\\source\\repos\\gameboycpu\\gameboycpu\\gameboy.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9A83393D-4139-4175-9058-FC3476FE3C4D}|GameboyCPU\\GameboyCPU.csproj|solutionrelative:gameboycpu\\gameboy.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{9A83393D-4139-4175-9058-FC3476FE3C4D}|GameboyCPU\\GameboyCPU.csproj|c:\\users\\dustin\\source\\repos\\gameboycpu\\gameboycpu\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9A83393D-4139-4175-9058-FC3476FE3C4D}|GameboyCPU\\GameboyCPU.csproj|solutionrelative:gameboycpu\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{9A83393D-4139-4175-9058-FC3476FE3C4D}|GameboyCPU\\GameboyCPU.csproj|c:\\users\\dustin\\source\\repos\\gameboycpu\\gameboycpu\\gameheader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -19,8 +19,8 @@
       "RelativeMoniker": "D:0:0:{9A83393D-4139-4175-9058-FC3476FE3C4D}|GameboyCPU\\GameboyCPU.csproj|solutionrelative:gameboycpu\\memorymap.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{9A83393D-4139-4175-9058-FC3476FE3C4D}|GameboyCPU\\GameboyCPU.csproj|c:\\users\\dustin\\source\\repos\\gameboycpu\\gameboycpu\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9A83393D-4139-4175-9058-FC3476FE3C4D}|GameboyCPU\\GameboyCPU.csproj|solutionrelative:gameboycpu\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{9A83393D-4139-4175-9058-FC3476FE3C4D}|GameboyCPU\\GameboyCPU.csproj|c:\\users\\dustin\\source\\repos\\gameboycpu\\gameboycpu\\gameboy.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9A83393D-4139-4175-9058-FC3476FE3C4D}|GameboyCPU\\GameboyCPU.csproj|solutionrelative:gameboycpu\\gameboy.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -30,21 +30,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "GameBoy.cs",
-              "DocumentMoniker": "C:\\Users\\Dustin\\source\\repos\\GameboyCPU\\GameboyCPU\\GameBoy.cs",
-              "RelativeDocumentMoniker": "GameboyCPU\\GameBoy.cs",
-              "ToolTip": "C:\\Users\\Dustin\\source\\repos\\GameboyCPU\\GameboyCPU\\GameBoy.cs",
-              "RelativeToolTip": "GameboyCPU\\GameBoy.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAmwBQAAAAMAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-07T02:05:01.4Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
@@ -53,10 +40,23 @@
               "RelativeDocumentMoniker": "GameboyCPU\\GameBoyCPU.cs",
               "ToolTip": "C:\\Users\\Dustin\\source\\repos\\GameboyCPU\\GameboyCPU\\GameBoyCPU.cs",
               "RelativeToolTip": "GameboyCPU\\GameBoyCPU.cs",
-              "ViewState": "AgIAABMAAAAAAAAAAAAowCUAAAAMAAAAAAAAAA==",
+              "ViewState": "AgIAAHwDAAAAAAAAAAAcwJIDAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-06T20:09:31.58Z",
+              "IsPinned": true,
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "GameBoy.cs",
+              "DocumentMoniker": "C:\\Users\\Dustin\\source\\repos\\GameboyCPU\\GameboyCPU\\GameBoy.cs",
+              "RelativeDocumentMoniker": "GameboyCPU\\GameBoy.cs",
+              "ToolTip": "C:\\Users\\Dustin\\source\\repos\\GameboyCPU\\GameboyCPU\\GameBoy.cs",
+              "RelativeToolTip": "GameboyCPU\\GameBoy.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-07T02:05:01.4Z"
             },
             {
               "$type": "Document",
@@ -66,7 +66,7 @@
               "RelativeDocumentMoniker": "GameboyCPU\\MemoryMap.cs",
               "ToolTip": "C:\\Users\\Dustin\\source\\repos\\GameboyCPU\\GameboyCPU\\MemoryMap.cs",
               "RelativeToolTip": "GameboyCPU\\MemoryMap.cs",
-              "ViewState": "AgIAAAsAAAAAAAAAAAAQwBYAAAAMAAAAAAAAAA==",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAowEgAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-03-29T00:41:22.716Z",
               "EditorCaption": ""
@@ -79,23 +79,21 @@
               "RelativeDocumentMoniker": "GameboyCPU\\GameHeader.cs",
               "ToolTip": "C:\\Users\\Dustin\\source\\repos\\GameboyCPU\\GameboyCPU\\GameHeader.cs",
               "RelativeToolTip": "GameboyCPU\\GameHeader.cs",
-              "ViewState": "AgIAACQAAAAAAAAAAAAcwD4AAAAIAAAAAAAAAA==",
+              "ViewState": "AgIAAIgAAAAAAAAAAAAiwD4AAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-22T08:09:30.718Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-22T08:09:30.718Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 1,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Dustin\\source\\repos\\GameboyCPU\\GameboyCPU\\Program.cs",
               "RelativeDocumentMoniker": "GameboyCPU\\Program.cs",
               "ToolTip": "C:\\Users\\Dustin\\source\\repos\\GameboyCPU\\GameboyCPU\\Program.cs",
               "RelativeToolTip": "GameboyCPU\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAIAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-06T08:08:43.6Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-02-06T08:08:43.6Z"
             }
           ]
         }

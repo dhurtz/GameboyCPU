@@ -22,6 +22,7 @@ namespace GameboyCPU
             notUsable = new byte[0x60]; // Not usable memory area (0xFEA0 - 0xFEFF)
             ioPorts = new byte[0x80]; // I/O Ports (0xFF00 - 0xFF7F)
             highRam = new byte[0x7F]; // High RAM (0xFF80 - 0xFFFF), also known as HRAM
+            StackPointer = 0x7D; // Stack Pointer starts at 0xFFFE
         }
 
         public byte[] romFixedBank;
@@ -35,7 +36,7 @@ namespace GameboyCPU
         public byte[] notUsable; // Not usable memory area (0xFEA0 - 0xFEFF)
         public byte[] ioPorts; // I/O Ports (0xFF00 - 0xFF7F)
         public byte[] highRam; // High RAM (0xFF80 - 0xFFFF), also known as HRAM
-
+        
         byte inerruptEnableRegister = 0; // Interrupt Enable Register (IE) at 0xFFFF
 
         public byte StackPointer;
@@ -43,30 +44,34 @@ namespace GameboyCPU
         public void PushToStack(byte value)
         {
             highRam[StackPointer] = value;
-            StackPointer++;
+            StackPointer--;
         }
 
         public void PushToStack(ushort value)
         {
             highRam[StackPointer] = (byte)(value & 0x00FF);
-            StackPointer++;
+            StackPointer--;
             highRam[StackPointer] = (byte)((value & 0xFF00) >> 8);
-            StackPointer++;
+            StackPointer--;
         }
        
         public ushort PopFromStack16Bit()
         {
             byte upperByte = highRam[StackPointer];
-            StackPointer--;
+            StackPointer++;
             byte lowerByte = highRam[StackPointer];
-            StackPointer--;
+            StackPointer++;
             return (ushort)((upperByte << 8) | lowerByte);
         }
 
         public byte PopFromStack()
         {
+            if (StackPointer == 0xFF)
+            {
+                throw new Exception("Stack underflow");
+            }
             var value = highRam[StackPointer];
-            StackPointer--;
+            StackPointer++;
             return value;
         }
 
