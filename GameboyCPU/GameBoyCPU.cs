@@ -20,16 +20,6 @@ namespace GameboyCPU
             public ushort registerPC;
         }
 
-        public bool carryFlag = false;
-
-        public bool HalfCarryFlag = false;
-
-        public bool subtractFlagN = false;
-
-        public bool IMEFlag = false;
-
-        public bool zeroFLag = false;
-
         private MemoryMap memoryMap;
 
         public GameBoyCPU(MemoryMap memoryMap)
@@ -108,7 +98,7 @@ namespace GameboyCPU
             instructionSet[0x34] = () => INC(ref registers.registerHL, true);
             instructionSet[0x35] = () => DECReference(registers.registerHL);
             instructionSet[0x36] = () => LD(ref registers.registerHL, FetchParameters8Bit(), true);
-            instructionSet[0x37] = () => SCF();
+            //instructionSet[0x37] = () => SCF();
             instructionSet[0x38] = () => JRWithNC();
             instructionSet[0x39] = () => ADD(ref registers.registerHL, registers.registerSP);
             instructionSet[0x3A] = () => LDWithHCDecrement(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
@@ -245,33 +235,33 @@ namespace GameboyCPU
             instructionSet[0xBD] = () => CP(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
             instructionSet[0xBE] = () => CP(ref registers.registerAF, registers.registerHL, registers.registerHL, true); // compare with memory location
             instructionSet[0xBF] = () => CP(ref registers.registerAF, (byte)registers.registerAF, true); // compare with itself, should always be 0 and set flags accordingly
-            instructionSet[0xC0] = () => RET(!zeroFLag);
-            instructionSet[0xC1] = () => POP(ref registers.registerBC); // Pop BC from stack
-            instructionSet[0xC2] = () => JP(!carryFlag, FetchParameters16Bit());
-            instructionSet[0xC3] = () => JP(FetchParameters16Bit()); // Jump to address in PC
-            instructionSet[0xC4] = () => CALL(!zeroFLag, FetchParameters16Bit()); // Call if not zero flag is set
-            instructionSet[0xC5] = () => PUSH(ref registers.registerBC); // Push BC onto stack
-            instructionSet[0xC6] = () => ADD(ref registers.registerAF, FetchParameters8Bit(), true); // Add immediate value to A register
-            instructionSet[0xC7] = () => RST(0x00); // Restart at 0x00
-            instructionSet[0xC8] = () => RET(zeroFLag); // Return if zero flag is set
-            instructionSet[0xC9] = () => RET(); // Unconditional return from subroutine
-            instructionSet[0xCA] = () => JP(zeroFLag, FetchParameters16Bit()); // Jump to address if zero flag is set
-            //instructionSet[0xCB] = () => PREFIX();
-            instructionSet[0xCC] = () => CALL(zeroFLag, FetchParameters16Bit()); // Call if zero flag is set
-            instructionSet[0xCD] = () => CALL(FetchParameters16Bit()); // Call subroutine at address in PC
-            instructionSet[0xCE] = () => ADC(ref registers.registerAF, FetchParameters8Bit(), true); // Add with carry immediate value to A register
-            instructionSet[0xCF] = () => RST(0x08); // Restart at 0x08, typically used for interrupts or specific routines
-            instructionSet[0xD0] = () => RET(!zeroFLag); // Return if no carry flag is set
-            instructionSet[0xD1] = () => POP(ref registers.registerDE); // Pop DE from stack
-            instructionSet[0xD2] = () => JP(!carryFlag, FetchParameters16Bit()); // Jump to address if no carry flag is set
-            instructionSet[0xD4] = () => CALL(!carryFlag, FetchParameters16Bit()); // Call if no carry flag is set
-            instructionSet[0xD5] = () => PUSH(ref registers.registerDE); // Push DE onto stack
-            instructionSet[0xD6] = () => SUB(ref registers.registerAF, FetchParameters8Bit(), true); // Subtract immediate value from A register
-            instructionSet[0xD7] = () => RST(0x10); // Restart at 0x10, typically used for interrupts or specific routines
-            instructionSet[0xD8] = () => RET(carryFlag); // Return if carry flag is set
-            instructionSet[0xD9] = () => RET(); // Unconditional return from subroutine (this is a duplicate, should be removed)
-            instructionSet[0xDA] = () => JP(carryFlag, FetchParameters16Bit()); // Jump to address if carry flag is set
-            instructionSet[0xDC] = () => CALL(carryFlag, FetchParameters16Bit()); // Call if carry flag is set
+            //instructionSet[0xC0] = () => RET(!zeroFLag);
+            //instructionSet[0xC1] = () => POP(ref registers.registerBC); // Pop BC from stack
+            //instructionSet[0xC2] = () => JP(!carryFlag, FetchParameters16Bit());
+            //instructionSet[0xC3] = () => JP(FetchParameters16Bit()); // Jump to address in PC
+            //instructionSet[0xC4] = () => CALL(!zeroFLag, FetchParameters16Bit()); // Call if not zero flag is set
+            //instructionSet[0xC5] = () => PUSH(ref registers.registerBC); // Push BC onto stack
+            //instructionSet[0xC6] = () => ADD(ref registers.registerAF, FetchParameters8Bit(), true); // Add immediate value to A register
+            //instructionSet[0xC7] = () => RST(0x00); // Restart at 0x00
+            //instructionSet[0xC8] = () => RET(zeroFLag); // Return if zero flag is set
+            //instructionSet[0xC9] = () => RET(); // Unconditional return from subroutine
+            //instructionSet[0xCA] = () => JP(zeroFLag, FetchParameters16Bit()); // Jump to address if zero flag is set
+            ////instructionSet[0xCB] = () => PREFIX();
+            //instructionSet[0xCC] = () => CALL(zeroFLag, FetchParameters16Bit()); // Call if zero flag is set
+            //instructionSet[0xCD] = () => CALL(FetchParameters16Bit()); // Call subroutine at address in PC
+            //instructionSet[0xCE] = () => ADC(ref registers.registerAF, FetchParameters8Bit(), true); // Add with carry immediate value to A register
+            //instructionSet[0xCF] = () => RST(0x08); // Restart at 0x08, typically used for interrupts or specific routines
+            //instructionSet[0xD0] = () => RET(!zeroFLag); // Return if no carry flag is set
+            //instructionSet[0xD1] = () => POP(ref registers.registerDE); // Pop DE from stack
+            //instructionSet[0xD2] = () => JP(!carryFlag, FetchParameters16Bit()); // Jump to address if no carry flag is set
+            //instructionSet[0xD4] = () => CALL(!carryFlag, FetchParameters16Bit()); // Call if no carry flag is set
+            //instructionSet[0xD5] = () => PUSH(ref registers.registerDE); // Push DE onto stack
+            //instructionSet[0xD6] = () => SUB(ref registers.registerAF, FetchParameters8Bit(), true); // Subtract immediate value from A register
+            //instructionSet[0xD7] = () => RST(0x10); // Restart at 0x10, typically used for interrupts or specific routines
+            //instructionSet[0xD8] = () => RET(carryFlag); // Return if carry flag is set
+            //instructionSet[0xD9] = () => RET(); // Unconditional return from subroutine (this is a duplicate, should be removed)
+            //instructionSet[0xDA] = () => JP(carryFlag, FetchParameters16Bit()); // Jump to address if carry flag is set
+            //instructionSet[0xDC] = () => CALL(carryFlag, FetchParameters16Bit()); // Call if carry flag is set
             instructionSet[0xDE] = () => ADC(ref registers.registerAF, FetchParameters8Bit(), true); // Add with carry immediate value to A register
             instructionSet[0xDF] = () => RST(0x18); // Restart at 0x18, typically used for interrupts or specific routines
             instructionSet[0xE0] = () => LD(ref registers.registerAF, FetchParameters8Bit(), true); // Load immediate value into A register
@@ -288,14 +278,14 @@ namespace GameboyCPU
             instructionSet[0xF0] = () => LD(ref registers.registerAF, FetchParameters8Bit(), true); // Load immediate value into A register
             instructionSet[0xF1] = () => POP(ref registers.registerAF); // Pop AF from stack, typically used for restoring flags
             instructionSet[0xF2] = () => LD(ref registers.registerAF, (byte)(registers.registerBC >> 8), registers.registerAF); // Load BC into A register
-            instructionSet[0xF3] = () => DI(); // Disable interrupts (set IMEFlag to false)
+            //instructionSet[0xF3] = () => DI(); // Disable interrupts (set IMEFlag to false)
             instructionSet[0xF5] = () => PUSH(ref registers.registerAF); // Push AF onto stack, typically used for saving flags
             instructionSet[0xF6] = () => OR(ref registers.registerAF, FetchParameters8Bit(), true); // OR immediate value with A register
             instructionSet[0xF7] = () => RST(0x30); // Restart at 0x30, typically used for interrupts or specific routines
             instructionSet[0xF8] = () => LD(ref registers.registerHL, (ushort)(registers.registerSP + (sbyte)FetchParameters8Bit())); // Load HL from stack pointer with offset
             instructionSet[0xF9] = () => LD(ref registers.registerSP, registers.registerHL); // Load stack pointer from HL register
             instructionSet[0xFA] = () => LD(ref registers.registerAF, registers.registerAF, registers.registerAF); // Load immediate value into A register from address
-            instructionSet[0xFB] = () => EI(); // Enable interrupts (set IMEFlag to true)
+            //instructionSet[0xFB] = () => EI(); // Enable interrupts (set IMEFlag to true)
             instructionSet[0xFE] = () => CP(ref registers.registerAF, FetchParameters8Bit(), true); // Compare immediate value with A register
             instructionSet[0xFF] = () => RST(0x38); // Restart at 0x38, typically used for interrupts or specific routines
 
@@ -314,6 +304,77 @@ namespace GameboyCPU
                 instructionSet[opCode](); // Execute the instruction based on the opcode
                 Console.WriteLine($"Executed instruction: {opCode:X2} at PC: {registers.registerPC:X4}");
             }
+        }
+
+        private bool isCarryFlagSet()
+        {
+            // Check if the carry flag is set
+            return (registers.registerAF & 0x10) != 0;
+        }
+
+        private bool isZeroFlagSet()
+        {
+            // Check if the zero flag is set
+            return (registers.registerAF & 0x80) != 0;
+        }
+
+        private bool isSubtractFlagSet()
+        {
+            // Check if the subtract flag is set
+            return (registers.registerAF & 0x20) != 0;
+        }
+
+        private bool isHalfCarryFlagSet()
+        {
+            // Check if the half carry flag is set
+            return (registers.registerAF & 0x40) != 0;
+        }
+
+        private bool isNegativeFlagSet()
+        {
+            // Check if the negative flag is set
+            return (registers.registerAF & 0x02) != 0;
+        }
+
+        private void SetCarryFlag(bool value)
+        {
+            // Set the carry flag
+            if (value)
+                registers.registerAF |= 0x10;
+            else
+                registers.registerAF &= 0xEF; // Clear the carry flag
+        }
+
+        private void SetZeroFlag(bool value)
+        {
+            if (value)
+                registers.registerAF |= 0x80;
+            else
+                registers.registerAF &= 0x7F; // Clear the zero flag
+        }
+
+        private void SetSubtractFlag(bool value)
+        {
+            if (value)
+                registers.registerAF |= 0x20;
+            else
+                registers.registerAF &= 0xDF; // Clear the subtract flag
+        }
+
+        private void SetHalfCarryFlag(bool value)
+        {
+            if (value)
+                registers.registerAF |= 0x40;
+            else
+                registers.registerAF &= 0xBF; // Clear the half carry flag
+        }
+
+        private void SetNegativeFlag(bool value)
+        {
+            if (value)
+                registers.registerAF |= 0x02;
+            else
+                registers.registerAF &= 0xFD; // Clear the negative flag
         }
 
         public byte ReadInstruction(ushort programCounter)
@@ -341,23 +402,23 @@ namespace GameboyCPU
 
         #region INSTRUCTION_FUNCTIONS
 
-        private void DI()
-        {
-            IMEFlag = false;
-            registers.registerPC++;
-        }
+        //private void DI()
+        //{
+        //    IMEFlag = false;
+        //    registers.registerPC++;
+        //}
 
-        private void EI()
-        {
-            IMEFlag = true;
-            registers.registerPC++;
-        }
+        //private void EI()
+        //{
+        //    IMEFlag = true;
+        //    registers.registerPC++;
+        //}
 
-        private void SCF()
-        {
-            carryFlag = true;
-            registers.registerPC++;
-        }
+        //private void SCF()
+        //{
+        //    carryFlag = true;
+        //    registers.registerPC++;
+        //}
 
         private void RST(byte address)
         {
@@ -417,17 +478,17 @@ namespace GameboyCPU
             registers.registerPC++;
         }
 
-        private void SetPOPFlags(byte result)
-        {
-            // set zero flag if bit 7 is set
-            zeroFLag = result == 0;
-            // set subtract flag if bit 6 is set
-            subtractFlagN = (result & 0x20) != 0;
-            // set half carry flag if bit 5 is set
-            HalfCarryFlag = (result & 0x10) != 0;
-            // set carry flag if bit 4 is set
-            carryFlag = (result & 0x08) != 0;
-        }
+        //private void SetPOPFlags(byte result)
+        //{
+        //    // set zero flag if bit 7 is set
+        //    zeroFLag = result == 0;
+        //    // set subtract flag if bit 6 is set
+        //    subtractFlagN = (result & 0x20) != 0;
+        //    // set half carry flag if bit 5 is set
+        //    HalfCarryFlag = (result & 0x10) != 0;
+        //    // set carry flag if bit 4 is set
+        //    carryFlag = (result & 0x08) != 0;
+        //}
 
         private void PUSH(ref ushort register)
         {
@@ -523,10 +584,10 @@ namespace GameboyCPU
 
         private void SetCPFlags(byte result, ushort register1, ushort register2)
         {
-            zeroFLag = result == 0;
-            subtractFlagN = true;
-            HalfCarryFlag = (result & 0xF) > (result & 0xF);
-            carryFlag = register1 > register2;
+            //zeroFLag = result == 0;
+            //subtractFlagN = true;
+            //HalfCarryFlag = (result & 0xF) > (result & 0xF);
+            //carryFlag = register1 > register2;
         }
 
         /// <summary>
@@ -615,10 +676,10 @@ namespace GameboyCPU
 
         private void SetORFlags(ushort result)
         {
-            zeroFLag = result == 0;
-            HalfCarryFlag = false;
-            subtractFlagN = false;
-            carryFlag = false;
+            //zeroFLag = result == 0;
+            //HalfCarryFlag = false;
+            //subtractFlagN = false;
+            //carryFlag = false;
         }
 
         /// <summary>
@@ -631,59 +692,59 @@ namespace GameboyCPU
             a = (byte)~a;
 
             registers.registerAF = (ushort)((registers.registerAF & (0xFF00)) | a);
-            subtractFlagN = true;
-            HalfCarryFlag = true;
+            //subtractFlagN = true;
+            //HalfCarryFlag = true;
             registers.registerPC++;
         }
 
         /// <summary>
         /// Decimal Adjust Accumulator; sets flags based off of current register states
-        /// </summary>
+        ///// </summary>
         private void DAA()
         {
-            byte adjustment = 0;
-            byte a = (byte)(registers.registerAF >> 8);
+            //    byte adjustment = 0;
+            //    byte a = (byte)(registers.registerAF >> 8);
 
-            if (subtractFlagN)
-            {
+            //    if (subtractFlagN)
+            //    {
 
-                if (HalfCarryFlag)
-                {
-                    adjustment += 0x6;
-                }
+            //        if (HalfCarryFlag)
+            //        {
+            //            adjustment += 0x6;
+            //        }
 
-                if (carryFlag)
-                {
-                    adjustment += 0x60;
-                }
+            //        if (carryFlag)
+            //        {
+            //            adjustment += 0x60;
+            //        }
 
-                a -= adjustment;
-            }
-            else
-            {
-                if (HalfCarryFlag || ((a & 0xF) > 0x9))
-                {
-                    adjustment += 0x6;
-                }
+            //        a -= adjustment;
+            //    }
+            //    else
+            //    {
+            //        if (HalfCarryFlag || ((a & 0xF) > 0x9))
+            //        {
+            //            adjustment += 0x6;
+            //        }
 
-                if (carryFlag || (a > 0x99))
-                {
-                    adjustment += 0x60;
-                    carryFlag = true;
-                }
+            //        if (carryFlag || (a > 0x99))
+            //        {
+            //            adjustment += 0x60;
+            //            carryFlag = true;
+            //        }
 
-                a += adjustment;
-            }
-            registers.registerAF = (ushort)((registers.registerAF & (0xFF00)) | a);
-            SetDAAFlags(a);
-            registers.registerPC++;
+            //        a += adjustment;
+            //    }
+            //    registers.registerAF = (ushort)((registers.registerAF & (0xFF00)) | a);
+            //    SetDAAFlags(a);
+            //    registers.registerPC++;
         }
 
-        private void SetDAAFlags(ushort result)
-        {
-            zeroFLag = result == 0;
-            HalfCarryFlag = false;
-        }
+        //private void SetDAAFlags(ushort result)
+        //{
+        //    zeroFLag = result == 0;
+        //    HalfCarryFlag = false;
+        //}
 
         /// <summary>
         /// Jump to the address provided in memory
@@ -798,10 +859,10 @@ namespace GameboyCPU
 
         private void SetSUBFlags(ushort result, ushort register1, ushort register2)
         {
-            zeroFLag = result == 0;
-            subtractFlagN = true;
-            this.HalfCarryFlag = (result & 0xF) > 0xF;
-            carryFlag = register2 > register1;
+            //zeroFLag = result == 0;
+            //subtractFlagN = true;
+            //this.HalfCarryFlag = (result & 0xF) > 0xF;
+            //carryFlag = register2 > register1;
         }
 
         /// <summary>
@@ -899,10 +960,10 @@ namespace GameboyCPU
 
         private void SetADDFlags(ushort result)
         {
-            zeroFLag = result == 0;
-            subtractFlagN = false;
-            HalfCarryFlag = (result & 0xF) > 0xF;
-            carryFlag = result > 0xFF;
+            //zeroFLag = result == 0;
+            //subtractFlagN = false;
+            //HalfCarryFlag = (result & 0xF) > 0xF;
+            //carryFlag = result > 0xFF;
         }
 
         /// <summary>
@@ -988,84 +1049,84 @@ namespace GameboyCPU
 
         private void SetXORFlags(ushort result)
         {
-            zeroFLag = result == 0;
-            HalfCarryFlag = false;
-            subtractFlagN = false;
-            carryFlag = false;
+            //zeroFLag = result == 0;
+            //HalfCarryFlag = false;
+            //subtractFlagN = false;
+            //carryFlag = false;
         }
-        /// <summary>
-        /// Add the value of the second register to the first register including the carry flag
-        /// </summary>
-        /// <param name="register1"></param>
-        /// <param name="register2"></param>
-        /// <param name="isUpper"></param>
+        ///// <summary>
+        ///// Add the value of the second register to the first register including the carry flag
+        ///// </summary>
+        ///// <param name="register1"></param>
+        ///// <param name="register2"></param>
+        ///// <param name="isUpper"></param>
         private void SBC(ref ushort register1, ushort register2, bool isUpper)
         {
-            byte chosenByte;
-            if (isUpper)
-            {
-                chosenByte = (byte)(register1 >> 8);
-                chosenByte -= (byte)register2;
-                if (carryFlag)
-                {
-                    chosenByte--;
-                    SetSBCFlags(chosenByte, register1, register2, true);
-                    return;
-                }
-                register1 = (ushort)((register1 & 0x00FF) | chosenByte);
+        //    byte chosenByte;
+        //    if (isUpper)
+        //    {
+        //        chosenByte = (byte)(register1 >> 8);
+        //        chosenByte -= (byte)register2;
+        //        if (carryFlag)
+        //        {
+        //            chosenByte--;
+        //            SetSBCFlags(chosenByte, register1, register2, true);
+        //            return;
+        //        }
+        //        register1 = (ushort)((register1 & 0x00FF) | chosenByte);
 
-            }
-            else
-            {
-                chosenByte = (byte)(register1 & 0xFF);
-                chosenByte -= (byte)(register2);
-                if (carryFlag)
-                {
-                    chosenByte--;
-                    SetSBCFlags(chosenByte, register1, register2, true);
-                    return;
-                }
-                register1 = (ushort)((register1 & 0xFF00) | chosenByte);
-            }
-            SetSBCFlags(chosenByte, register1, register2, false);
-            registers.registerPC++;
+        //    }
+        //    else
+        //    {
+        //        chosenByte = (byte)(register1 & 0xFF);
+        //        chosenByte -= (byte)(register2);
+        //        if (carryFlag)
+        //        {
+        //            chosenByte--;
+        //            SetSBCFlags(chosenByte, register1, register2, true);
+        //            return;
+        //        }
+        //        register1 = (ushort)((register1 & 0xFF00) | chosenByte);
+        //    }
+        //    SetSBCFlags(chosenByte, register1, register2, false);
+        //    registers.registerPC++;
         }
 
-        /// <summary>
-        /// Subtract the value of the second register from the first register including the carry flag
-        /// </summary>
-        /// <param name="register1"></param>
-        /// <param name="register2"></param>
-        /// <param name="address"></param>
-        /// <param name="isUpper"></param>
+        ///// <summary>
+        ///// Subtract the value of the second register from the first register including the carry flag
+        ///// </summary>
+        ///// <param name="register1"></param>
+        ///// <param name="register2"></param>
+        ///// <param name="address"></param>
+        ///// <param name="isUpper"></param>
         private void SBC(ref ushort register1, ushort register2, ushort address, bool isUpper)
         {
-            var value = this.memoryMap.GetMemoryValue(address);
-            byte chosenByte;
-            if (isUpper)
-            {
-                chosenByte = (byte)(register1 >> 8);
-                var result = chosenByte - value;
-                if (carryFlag)
-                {
-                    chosenByte--;
-                    SetSBCFlags(chosenByte, register1, register2, true);
-                }
-            }
-            else
-            {
-                chosenByte = (byte)(register1 & 0xFF);
-                chosenByte -= (byte)(register2 & 0xFF);
-                if (carryFlag)
-                {
-                    chosenByte--;
-                    SetSBCFlags(chosenByte, register1, register2, true);
-                    return;
-                }
+            //    var value = this.memoryMap.GetMemoryValue(address);
+            //    byte chosenByte;
+            //    if (isUpper)
+            //    {
+            //        chosenByte = (byte)(register1 >> 8);
+            //        var result = chosenByte - value;
+            //        if (carryFlag)
+            //        {
+            //            chosenByte--;
+            //            SetSBCFlags(chosenByte, register1, register2, true);
+            //        }
+            //    }
+            //    else
+            //    {
+            //        chosenByte = (byte)(register1 & 0xFF);
+            //        chosenByte -= (byte)(register2 & 0xFF);
+            //        if (carryFlag)
+            //        {
+            //            chosenByte--;
+            //            SetSBCFlags(chosenByte, register1, register2, true);
+            //            return;
+            //        }
 
-            }
-            SetSBCFlags(chosenByte, register1, register2, false);
-            registers.registerPC++;
+            //    }
+            //    SetSBCFlags(chosenByte, register1, register2, false);
+            //    registers.registerPC++;
         }
 
         /// <summary>
@@ -1084,7 +1145,7 @@ namespace GameboyCPU
             {
                 chosenByte = (byte)(register1 >> 8);
                 var result = chosenByte - value;
-                if (carryFlag)
+                if (isCarryFlagSet())
                 {
                     chosenByte--;
                     SetSBCFlags(chosenByte, register1, register2, true);
@@ -1094,7 +1155,7 @@ namespace GameboyCPU
             {
                 chosenByte = (byte)(register1 & 0xFF);
                 chosenByte -= (byte)(register2 & 0xFF);
-                if (carryFlag)
+                if (isCarryFlagSet())
                 {
                     chosenByte--;
                     SetSBCFlags(chosenByte, register1, register2, true);
@@ -1108,10 +1169,10 @@ namespace GameboyCPU
 
         private void SetSBCFlags(ushort result, ushort register1, ushort register2, bool withCarry)
         {
-            zeroFLag = result == 0;
-            subtractFlagN = true;
-            this.HalfCarryFlag = (result & 0xF) > 0xF;
-            carryFlag = register2 > register1;
+            SetZeroFlag(result == 0);
+            SetSubtractFlag(true);
+            SetHalfCarryFlag((register1 & 0xF) - (register2 & 0xF) < 0);
+            SetCarryFlag(register1 < register2);
         }
 
         /// <summary>
@@ -1188,10 +1249,10 @@ namespace GameboyCPU
         /// <param name="registerB"></param>
         private void HandleADDFlags(ushort registerA, ushort registerB)
         {
-            zeroFLag = registerA == 0;
-            subtractFlagN = false;
-            carryFlag = registerA + registerB > 0xFF;
-            HalfCarryFlag = (registerA & 0xF) + (registerB & 0xF) > 0xF;
+            SetZeroFlag(registerA == 0);
+            SetSubtractFlag(false);
+            SetHalfCarryFlag((registerA & 0xF) + (registerB & 0xF) > 0xF);
+            SetCarryFlag(registerA + registerB > 0xFF);
         }
 
         /// <summary>
@@ -1206,7 +1267,7 @@ namespace GameboyCPU
             {
                 byte upperByte = (byte)(register1 >> 8);
                 upperByte += (byte)(register2 >> 8);
-                if (carryFlag)
+                if (isCarryFlagSet())
                 {
                     upperByte++;
                 }
@@ -1216,7 +1277,7 @@ namespace GameboyCPU
             {
                 byte lowerByte = (byte)(register1 & 0xFF);
                 lowerByte += (byte)(register2 & 0xFF);
-                if (carryFlag)
+                if (isCarryFlagSet())
                 {
                     lowerByte++;
                 }
@@ -1241,7 +1302,7 @@ namespace GameboyCPU
                 chosenByte = (byte)(register1 & 0xFF);
 
             chosenByte += memoryMap.GetMemoryValue(address);
-            if (carryFlag)
+            if (isCarryFlagSet())
             {
                 chosenByte++;
             }
@@ -1266,7 +1327,7 @@ namespace GameboyCPU
                 chosenByte = (byte)(register1 & 0xFF);
 
             chosenByte += memoryMap.GetMemoryValue(address);
-            if (carryFlag)
+            if (isCarryFlagSet())
             {
                 chosenByte++;
             }
@@ -1282,32 +1343,35 @@ namespace GameboyCPU
         /// <param name="register2"></param>
         private void HandleADCFlags(ushort register1, ushort register2)
         {
-            zeroFLag = register1 == 0;
-            subtractFlagN = false;
-            carryFlag = register1 + register2 > 0xFF;
-            HalfCarryFlag = (register1 & 0xF) + (register2 & 0xF) > 0xF;
+            SetZeroFlag(register1 == 0);
+            SetSubtractFlag(false);
+            SetHalfCarryFlag((register1 & 0xF) + (register2 & 0xF) > 0xF);
+            SetCarryFlag(register1 + register2 > 0xFF);
         }
-
         /// <summary>
         /// Rotate register A left. aka bitwise left shift where we move the carry to the right most bit
         /// </summary>
         private void RLCA()
         {
             byte a = (byte)(registers.registerAF >> 8);
-            carryFlag = (a & 0x80) != 0;
+            bool tempCarryFlag = isCarryFlagSet();
+            if ((a & 0x80) != 0)
+                SetCarryFlag(true);
+            else
+                SetCarryFlag(false);
 
             a = (byte)(a << 1);
 
-            if (carryFlag)
+            if (tempCarryFlag)
             {
                 a++;
             }
 
-            zeroFLag = false;
-            subtractFlagN = false;
-            HalfCarryFlag = false;
+            SetZeroFlag(false);
+            SetSubtractFlag(false);
+            SetHalfCarryFlag(false);
 
-            registers.registerAF = (ushort)((registers.registerAF & (0xFF00)) | a);
+            registers.registerAF = (ushort)((a << 8) | (registers.registerAF & 0xFF));
             registers.registerPC++;
         }
 
@@ -1317,8 +1381,12 @@ namespace GameboyCPU
         private void RLA()
         {
             byte a = (byte)(registers.registerAF >> 8);
-            bool tempCarryFlag = carryFlag;
-            carryFlag = (a & 0x80) != 0;
+            bool tempCarryFlag = isCarryFlagSet();
+
+            if ((a & 0x80) != 0)
+                SetCarryFlag(true);
+            else
+                SetCarryFlag(false);
 
             a = (byte)(a << 1);
 
@@ -1327,11 +1395,11 @@ namespace GameboyCPU
                 a++;
             }
 
-            zeroFLag = false;
-            subtractFlagN = false;
-            HalfCarryFlag = false;
+            SetZeroFlag(false);
+            SetSubtractFlag(false);
+            SetHalfCarryFlag(false);
 
-            registers.registerAF = (ushort)((registers.registerAF & (0xFF00)) | a);
+            registers.registerAF = (ushort)((a << 8) | (registers.registerAF & 0xFF));            
             registers.registerPC++;
         }
 
@@ -1341,8 +1409,11 @@ namespace GameboyCPU
         private void RRA()
         {
             byte a = (byte)(registers.registerAF >> 8);
-            bool tempCarryFlag = carryFlag;
-            carryFlag = (a & 0x1) != 0;
+            bool tempCarryFlag = isCarryFlagSet();
+            if ((a & 0x1) != 0)
+                SetCarryFlag(true);
+            else
+                SetCarryFlag(false);
 
             a = (byte)(a >> 1);
 
@@ -1351,11 +1422,11 @@ namespace GameboyCPU
                 a = (byte)(a | 0x80);
             }
 
-            zeroFLag = false;
-            subtractFlagN = false;
-            HalfCarryFlag = false;
+            SetZeroFlag(false);
+            SetSubtractFlag(false);
+            SetHalfCarryFlag(false);
 
-            registers.registerAF = (ushort)((registers.registerAF & (0x00FF)) | a);
+            registers.registerAF = (ushort)((a << 8) | (registers.registerAF & 0xFF));
             registers.registerPC++;
         }
 
@@ -1376,20 +1447,22 @@ namespace GameboyCPU
         private void RRCA()
         {
             byte a = (byte)(registers.registerAF >> 8);
-            carryFlag = (a & 0x1) != 0;
-
+            bool setToFront = false;
+            if ((a & 0x1) != 0)
+            {
+                SetCarryFlag(true);
+                setToFront = true;
+            }
+            
             a = (byte)(a >> 1);
 
-            if (carryFlag)
-            {
+            if (setToFront)
                 a = (byte)(a | 0x80);
-            }
 
-            zeroFLag = false;
-            subtractFlagN = false;
-            HalfCarryFlag = false;
-
-            registers.registerAF = (ushort)((registers.registerAF & (0x00FF)) | a);
+            SetZeroFlag(false);
+            SetSubtractFlag(false);
+            SetHalfCarryFlag(false);
+            registers.registerAF = (ushort)((a << 8) | (registers.registerAF & 0xFF));
             registers.registerPC++;
         }
 
@@ -1620,9 +1693,16 @@ namespace GameboyCPU
         /// <param name="value"></param>
         private void SetINCFlags(ushort value)
         {
-            zeroFLag = value == 0;
-            subtractFlagN = false;
-            HalfCarryFlag = (value & 0xF) == 0;
+            if (value == 0)
+            {
+                SetZeroFlag(true);
+            }
+            SetSubtractFlag(false);
+
+            if ((value & 0xF) == 0)
+            {
+                SetHalfCarryFlag(true);
+            }
         }
 
         /// <summary>
@@ -1682,9 +1762,15 @@ namespace GameboyCPU
         /// <param name="value"></param>
         private void SetDECFlags(ushort value)
         {
-            zeroFLag = value == 0;
-            subtractFlagN = true;
-            HalfCarryFlag = (value & 0xF) == 0xF;
+            if (value == 0)
+            {
+                SetZeroFlag(true);
+            }
+            SetSubtractFlag(true);
+            if ((value & 0xF) == 0xF)
+            {
+                SetHalfCarryFlag(true);
+            }
         }
         #endregion
 
@@ -1710,6 +1796,12 @@ namespace GameboyCPU
             Console.WriteLine("AND test passed");
             TestOR();
             Console.WriteLine("OR test passed");
+            TestRRA();
+            Console.WriteLine("RRA test passed");
+            TestRRCA();
+            Console.WriteLine("RRCA test passed");
+            TestRLA();
+            Console.WriteLine("RLA test passed");
         }
 
         private void TestDEC()
@@ -1834,7 +1926,6 @@ namespace GameboyCPU
                 string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
                 throw new Exception("AND failed expected: 0b1111111100000001 recieved: " + binaryConversion);
             }
-            #endregion
         }
 
         public void TestOR()
@@ -1854,5 +1945,72 @@ namespace GameboyCPU
                 throw new Exception("OR failed expected: 0b0000000000000001 recieved: " + binaryConversion);
             }
         }
+
+        public void TestRRA()
+        {
+            registers.registerAF = 0b1000000000000000;
+            RRA();
+            if (registers.registerAF != 0b0100000000000000  || isCarryFlagSet())
+            {
+               string binaryConversion = Convert.ToString(registers.registerAF, 2).PadLeft(16, '0');
+                throw new Exception("RRA failed expected: 0b0100000000000000 recieved: " + binaryConversion +
+                    "\n Carry expected: 0 recieved: 1");
+            }
+            registers.registerAF = 0b0000000100000000;
+            RRA();
+            if (registers.registerAF != 0b0000000000010000 || !isCarryFlagSet())
+            {
+                string binaryConversion = Convert.ToString(registers.registerAF, 2).PadLeft(16, '0');
+                throw new Exception("RRA failed expected: 0b0000000000010000 recieved: " + binaryConversion + 
+                   "\n Carry expected: 1 recieved: 0");
+            }
+        }
+
+        public void TestRRCA()
+        {
+            registers.registerAF = 0b1000000000000000;
+            RRCA();
+            if (registers.registerAF != 0b0100000000000000 || isCarryFlagSet())
+            {
+                string binaryConversion = Convert.ToString(registers.registerAF, 2).PadLeft(16, '0');
+                throw new Exception("RRCA failed expected: 0b0100000000000000 recieved: " + binaryConversion +
+                    "\n Carry expected: 0 recieved: 1");
+            }
+            registers.registerAF = 0b0000000100000000;
+            RRCA();
+            if (registers.registerAF != 0b1000000000010000 || !isCarryFlagSet())
+            {
+                string binaryConversion = Convert.ToString(registers.registerAF, 2).PadLeft(16, '0');
+                throw new Exception("RRCA failed expected: 0b1000000000010000 recieved: " + binaryConversion +
+                    "\n Carry expected: 1 recieved: 0");
+            }
+        }
+
+        public void TestRLA()
+        {
+            registers.registerAF = 0b1000000000000000;
+            RLA();
+            if (registers.registerAF != 0b0000000000010000 || !isCarryFlagSet())
+            {
+                string binaryConversion = Convert.ToString(registers.registerAF, 2).PadLeft(16, '0');
+                throw new Exception("RLA failed expected: 0b0000000000000000 recieved: " + binaryConversion +
+                    "\n Carry expected: 0 recieved: 1");
+            }
+            registers.registerAF = 0b0100000000000000;
+            RLA();
+            if (registers.registerAF != 0b1000000000000000 || isCarryFlagSet())
+            {
+                string binaryConversion = Convert.ToString(registers.registerAF, 2).PadLeft(16, '0');
+                throw new Exception("RLA failed expected: 0b1000000000000000 recieved: " + binaryConversion +
+                    "\n Carry expected: 1 recieved: 0");
+            }
+        }
+
+        public void TestRLC()
+        {
+
+        }
+
+        #endregion
     }
 }
