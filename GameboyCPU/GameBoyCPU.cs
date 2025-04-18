@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 
 namespace GameboyCPU
@@ -985,7 +986,7 @@ namespace GameboyCPU
             }
             else
             {
-                lowerByte ^= register2; 
+                lowerByte ^= register2;
                 chosenByte = lowerByte;
             }
             register1 = (ushort)((upperByte << 8) | lowerByte);
@@ -1062,34 +1063,34 @@ namespace GameboyCPU
         ///// <param name="isUpper"></param>
         private void SBC(ref ushort register1, ushort register2, bool isUpper)
         {
-        //    byte chosenByte;
-        //    if (isUpper)
-        //    {
-        //        chosenByte = (byte)(register1 >> 8);
-        //        chosenByte -= (byte)register2;
-        //        if (carryFlag)
-        //        {
-        //            chosenByte--;
-        //            SetSBCFlags(chosenByte, register1, register2, true);
-        //            return;
-        //        }
-        //        register1 = (ushort)((register1 & 0x00FF) | chosenByte);
+            //    byte chosenByte;
+            //    if (isUpper)
+            //    {
+            //        chosenByte = (byte)(register1 >> 8);
+            //        chosenByte -= (byte)register2;
+            //        if (carryFlag)
+            //        {
+            //            chosenByte--;
+            //            SetSBCFlags(chosenByte, register1, register2, true);
+            //            return;
+            //        }
+            //        register1 = (ushort)((register1 & 0x00FF) | chosenByte);
 
-        //    }
-        //    else
-        //    {
-        //        chosenByte = (byte)(register1 & 0xFF);
-        //        chosenByte -= (byte)(register2);
-        //        if (carryFlag)
-        //        {
-        //            chosenByte--;
-        //            SetSBCFlags(chosenByte, register1, register2, true);
-        //            return;
-        //        }
-        //        register1 = (ushort)((register1 & 0xFF00) | chosenByte);
-        //    }
-        //    SetSBCFlags(chosenByte, register1, register2, false);
-        //    registers.registerPC++;
+            //    }
+            //    else
+            //    {
+            //        chosenByte = (byte)(register1 & 0xFF);
+            //        chosenByte -= (byte)(register2);
+            //        if (carryFlag)
+            //        {
+            //            chosenByte--;
+            //            SetSBCFlags(chosenByte, register1, register2, true);
+            //            return;
+            //        }
+            //        register1 = (ushort)((register1 & 0xFF00) | chosenByte);
+            //    }
+            //    SetSBCFlags(chosenByte, register1, register2, false);
+            //    registers.registerPC++;
         }
 
         ///// <summary>
@@ -1283,6 +1284,7 @@ namespace GameboyCPU
                 }
                 register1 = (ushort)((register1 & 0xFF00) | lowerByte);
             }
+            HandleADCFlags(register1, register2);
             registers.registerPC++;
         }
 
@@ -1306,7 +1308,7 @@ namespace GameboyCPU
             {
                 chosenByte++;
             }
-
+            HandleADCFlags(register1, register2);
             register1 = chosenByte;
             registers.registerPC++;
         }
@@ -1354,15 +1356,16 @@ namespace GameboyCPU
         private void RLCA()
         {
             byte a = (byte)(registers.registerAF >> 8);
-            bool tempCarryFlag = isCarryFlagSet();
+            bool setToFront = false;
             if ((a & 0x80) != 0)
+            {
                 SetCarryFlag(true);
-            else
-                SetCarryFlag(false);
+                setToFront = true;
+            }
 
             a = (byte)(a << 1);
 
-            if (tempCarryFlag)
+            if (setToFront)
             {
                 a++;
             }
@@ -1399,7 +1402,7 @@ namespace GameboyCPU
             SetSubtractFlag(false);
             SetHalfCarryFlag(false);
 
-            registers.registerAF = (ushort)((a << 8) | (registers.registerAF & 0xFF));            
+            registers.registerAF = (ushort)((a << 8) | (registers.registerAF & 0xFF));
             registers.registerPC++;
         }
 
@@ -1453,7 +1456,7 @@ namespace GameboyCPU
                 SetCarryFlag(true);
                 setToFront = true;
             }
-            
+
             a = (byte)(a >> 1);
 
             if (setToFront)
@@ -1673,7 +1676,7 @@ namespace GameboyCPU
             register = (ushort)((upperByte << 8) | lowerByte);
             registers.registerPC++;
         }
-        
+
         /// <summary>
         /// Increments the value at the memory location
         /// </summary>
@@ -1802,6 +1805,9 @@ namespace GameboyCPU
             Console.WriteLine("RRCA test passed");
             TestRLA();
             Console.WriteLine("RLA test passed");
+            TestRLCA();
+            Console.WriteLine("RLCA test passed");
+            TestADC();
         }
 
         private void TestDEC()
@@ -1844,7 +1850,7 @@ namespace GameboyCPU
                 throw new Exception("INC failed" + "  Expected: 0x10100000  Recieved:" + binaryConversion);
             }
             register = 0x0;
-            INC(ref register, false); 
+            INC(ref register, false);
             if (register != 0x1)
             {
                 throw new Exception("INC failed" + "  Expected: 0x02  Recieved:" + register);
@@ -1950,9 +1956,9 @@ namespace GameboyCPU
         {
             registers.registerAF = 0b1000000000000000;
             RRA();
-            if (registers.registerAF != 0b0100000000000000  || isCarryFlagSet())
+            if (registers.registerAF != 0b0100000000000000 || isCarryFlagSet())
             {
-               string binaryConversion = Convert.ToString(registers.registerAF, 2).PadLeft(16, '0');
+                string binaryConversion = Convert.ToString(registers.registerAF, 2).PadLeft(16, '0');
                 throw new Exception("RRA failed expected: 0b0100000000000000 recieved: " + binaryConversion +
                     "\n Carry expected: 0 recieved: 1");
             }
@@ -1961,7 +1967,7 @@ namespace GameboyCPU
             if (registers.registerAF != 0b0000000000010000 || !isCarryFlagSet())
             {
                 string binaryConversion = Convert.ToString(registers.registerAF, 2).PadLeft(16, '0');
-                throw new Exception("RRA failed expected: 0b0000000000010000 recieved: " + binaryConversion + 
+                throw new Exception("RRA failed expected: 0b0000000000010000 recieved: " + binaryConversion +
                    "\n Carry expected: 1 recieved: 0");
             }
         }
@@ -2004,13 +2010,53 @@ namespace GameboyCPU
                 throw new Exception("RLA failed expected: 0b1000000000000000 recieved: " + binaryConversion +
                     "\n Carry expected: 1 recieved: 0");
             }
+            registers.registerAF = 0b1000000000010000;
+            RLA();
+            if (registers.registerAF != 0b0000000100010000 || !isCarryFlagSet())
+            {
+                string binaryConversion = Convert.ToString(registers.registerAF, 2).PadLeft(16, '0');
+                throw new Exception("RLA failed expected: 0b0000000100100000 recieved: " + binaryConversion +
+                    "\n Carry expected: 0 recieved: 1");
+            }
         }
 
-        public void TestRLC()
+        public void TestRLCA()
         {
-
+            registers.registerAF = 0b1000000000000000;
+            RLCA();
+            if (registers.registerAF != 0b0000000100010000 || !isCarryFlagSet())
+            {
+                string binaryConversion = Convert.ToString(registers.registerAF, 2).PadLeft(16, '0');
+                throw new Exception("RLCA failed expected: 0b000000100010000 recieved: " + binaryConversion +
+                    "\n Carry expected: 0 recieved: 1");
+            }
+            registers.registerAF = 0b0100000000000000;
+            RLCA();
+            if (registers.registerAF != 0b1000000000000000 || isCarryFlagSet())
+            {
+                string binaryConversion = Convert.ToString(registers.registerAF, 2).PadLeft(16, '0');
+                throw new Exception("RLCA failed expected: 0b1000000000000000 recieved: " + binaryConversion +
+                    "\n Carry expected: 1 recieved: 0");
+            }
         }
 
+        public void TestADC()
+        {
+            ushort register = 0xFF;
+            ADC(ref register, 0x01, true);
+            if (register != 0b0000000100000000)
+            {
+                string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
+                throw new Exception("ADC failed expected: 0b0000000100000000 recieved: " + binaryConversion);
+            }
+            register = 0xFF;
+            ADC(ref register, 0x01, false);
+            if (register != 0b1111111100000001)
+            {
+                string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
+                throw new Exception("ADC failed expected: 0b1111111100000001 recieved: " + binaryConversion);
+            }
+        }
         #endregion
     }
 }
