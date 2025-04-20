@@ -860,10 +860,10 @@ namespace GameboyCPU
 
         private void SetSUBFlags(ushort result, ushort register1, ushort register2)
         {
-            //zeroFLag = result == 0;
-            //subtractFlagN = true;
-            //this.HalfCarryFlag = (result & 0xF) > 0xF;
-            //carryFlag = register2 > register1;
+            SetZeroFlag(result == 0);
+            SetSubtractFlag(true);
+            SetHalfCarryFlag((result & 0xF) > 0xF);
+            SetCarryFlag(register2 > register1);
         }
 
         /// <summary>
@@ -1262,27 +1262,28 @@ namespace GameboyCPU
         /// <param name="register1"></param>
         /// <param name="register2"></param>
         /// <param name="isUpper"></param>
-        private void ADC(ref ushort register1, ushort register2, bool isUpper)
+        private void ADC(ref ushort register1, byte register2, bool isUpper)
         {
+            byte upperByte = (byte)(register1 >> 8);
+            byte lowerByte = (byte)(register1 & 0xFF);
+
             if (isUpper)
             {
-                byte upperByte = (byte)(register1 >> 8);
-                upperByte += (byte)(register2 >> 8);
+                upperByte += register2;
                 if (isCarryFlagSet())
                 {
                     upperByte++;
                 }
-                register1 = (ushort)((register1 & 0x00FF) | upperByte);
+                register1 = (ushort)((upperByte << 8) | lowerByte);
             }
             else
             {
-                byte lowerByte = (byte)(register1 & 0xFF);
-                lowerByte += (byte)(register2 & 0xFF);
+                lowerByte += register2;
                 if (isCarryFlagSet())
                 {
                     lowerByte++;
                 }
-                register1 = (ushort)((register1 & 0xFF00) | lowerByte);
+                register1 = (ushort)((upperByte << 8) | lowerByte);
             }
             HandleADCFlags(register1, register2);
             registers.registerPC++;
@@ -1808,6 +1809,7 @@ namespace GameboyCPU
             TestRLCA();
             Console.WriteLine("RLCA test passed");
             TestADC();
+            Console.WriteLine("ADC test passed");
         }
 
         private void TestDEC()
@@ -2042,21 +2044,40 @@ namespace GameboyCPU
 
         public void TestADC()
         {
-            ushort register = 0xFF;
+            ushort register = 0x00;
             ADC(ref register, 0x01, true);
             if (register != 0b0000000100000000)
             {
                 string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
                 throw new Exception("ADC failed expected: 0b0000000100000000 recieved: " + binaryConversion);
             }
-            register = 0xFF;
-            ADC(ref register, 0x01, false);
-            if (register != 0b1111111100000001)
+            register = 0b000000000001000;
+            ADC(ref register, 0x01, true);
+            if (register != 0b0000001000001000)
             {
                 string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
-                throw new Exception("ADC failed expected: 0b1111111100000001 recieved: " + binaryConversion);
+                throw new Exception("ADC failed expected: 0b0000001000001000 recieved: " + binaryConversion);
             }
         }
+
+        public void TestSBC()
+        {
+            ushort register = 0xFF;
+            SBC(ref register, 0x01, true);
+            if (register != 0b1111111011111111)
+            {
+                string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
+                throw new Exception("SBC failed expected: 0b1111101111111111 recieved: " + binaryConversion);
+            }
+            register = 0xFF;
+            SBC(ref register, 0x01, false);
+            if (register != 0b1111111111111110)
+            {
+                string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
+                throw new Exception("SBC failed expected: 0b1111111111111110 recieved: " + binaryConversion);
+            }
+        }
+
         #endregion
     }
 }
