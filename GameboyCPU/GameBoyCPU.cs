@@ -180,14 +180,14 @@ namespace GameboyCPU
             instructionSet[0x85] = () => ADD(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
             instructionSet[0x86] = () => ADD(ref registers.registerAF, registers.registerHL, registers.registerHL);
             instructionSet[0x87] = () => ADD(ref registers.registerAF, (byte)registers.registerAF, true);
-            instructionSet[0x88] = () => ADC(ref registers.registerAF, (byte)registers.registerBC, true);
-            instructionSet[0x89] = () => ADC(ref registers.registerAF, (byte)(registers.registerBC << 8), true);
-            instructionSet[0x8A] = () => ADC(ref registers.registerAF, (byte)registers.registerDE, true);
-            instructionSet[0x8B] = () => ADC(ref registers.registerAF, (byte)(registers.registerDE << 8), true);
-            instructionSet[0x8C] = () => ADC(ref registers.registerAF, (byte)registers.registerHL, true);
-            instructionSet[0x8D] = () => ADC(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
+            instructionSet[0x88] = () => ADC(ref registers.registerAF, (byte)registers.registerBC);
+            instructionSet[0x89] = () => ADC(ref registers.registerAF, (byte)(registers.registerBC << 8));
+            instructionSet[0x8A] = () => ADC(ref registers.registerAF, (byte)registers.registerDE);
+            instructionSet[0x8B] = () => ADC(ref registers.registerAF, (byte)(registers.registerDE << 8));
+            instructionSet[0x8C] = () => ADC(ref registers.registerAF, (byte)registers.registerHL);
+            instructionSet[0x8D] = () => ADC(ref registers.registerAF, (byte)(registers.registerHL << 8));
             instructionSet[0x8E] = () => ADC(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
-            instructionSet[0x8F] = () => ADC(ref registers.registerAF, (byte)registers.registerAF, true);
+            instructionSet[0x8F] = () => ADC(ref registers.registerAF, (byte)registers.registerAF);
             instructionSet[0x90] = () => SUB(ref registers.registerAF, (byte)registers.registerBC, true);
             instructionSet[0x91] = () => SUB(ref registers.registerAF, (byte)(registers.registerBC << 8), true);
             instructionSet[0x92] = () => SUB(ref registers.registerAF, (byte)registers.registerDE, true);
@@ -196,14 +196,14 @@ namespace GameboyCPU
             instructionSet[0x95] = () => SUB(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
             instructionSet[0x96] = () => SUB(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
             instructionSet[0x97] = () => SUB(ref registers.registerAF, (byte)registers.registerAF, true);
-            instructionSet[0x98] = () => SBC(ref registers.registerAF, (byte)registers.registerBC, true);
-            instructionSet[0x99] = () => SBC(ref registers.registerAF, (byte)(registers.registerBC << 8), true);
-            instructionSet[0x9A] = () => SBC(ref registers.registerAF, (byte)registers.registerDE, true);
-            instructionSet[0x9B] = () => SBC(ref registers.registerAF, (byte)(registers.registerDE << 8), true);
-            instructionSet[0x9C] = () => SBC(ref registers.registerAF, (byte)registers.registerHL, true);
-            instructionSet[0x9D] = () => SBC(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
-            instructionSet[0x9E] = () => SBC(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
-            instructionSet[0x9F] = () => SBC(ref registers.registerAF, (byte)registers.registerAF, true);
+            instructionSet[0x98] = () => SBC(ref registers.registerAF, (byte)registers.registerBC);
+            instructionSet[0x99] = () => SBC(ref registers.registerAF, (byte)(registers.registerBC << 8));
+            instructionSet[0x9A] = () => SBC(ref registers.registerAF, (byte)registers.registerDE);
+            instructionSet[0x9B] = () => SBC(ref registers.registerAF, (byte)(registers.registerDE << 8));
+            instructionSet[0x9C] = () => SBC(ref registers.registerAF, (byte)registers.registerHL);
+            instructionSet[0x9D] = () => SBC(ref registers.registerAF, (byte)(registers.registerHL << 8));
+            instructionSet[0x9E] = () => SBC(ref registers.registerAF, registers.registerHL, registers.registerHL);
+            instructionSet[0x9F] = () => SBC(ref registers.registerAF, (byte)registers.registerAF);
             instructionSet[0xA0] = () => AND(ref registers.registerAF, (byte)registers.registerBC, true);
             instructionSet[0xA1] = () => AND(ref registers.registerAF, (byte)(registers.registerBC << 8), true);
             instructionSet[0xA2] = () => AND(ref registers.registerAF, (byte)registers.registerDE, true);
@@ -236,34 +236,34 @@ namespace GameboyCPU
             instructionSet[0xBD] = () => CP(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
             instructionSet[0xBE] = () => CP(ref registers.registerAF, registers.registerHL, registers.registerHL, true); // compare with memory location
             instructionSet[0xBF] = () => CP(ref registers.registerAF, (byte)registers.registerAF, true); // compare with itself, should always be 0 and set flags accordingly
-            //instructionSet[0xC0] = () => RET(!zeroFLag);
-            //instructionSet[0xC1] = () => POP(ref registers.registerBC); // Pop BC from stack
-            //instructionSet[0xC2] = () => JP(!carryFlag, FetchParameters16Bit());
-            //instructionSet[0xC3] = () => JP(FetchParameters16Bit()); // Jump to address in PC
-            //instructionSet[0xC4] = () => CALL(!zeroFLag, FetchParameters16Bit()); // Call if not zero flag is set
-            //instructionSet[0xC5] = () => PUSH(ref registers.registerBC); // Push BC onto stack
-            //instructionSet[0xC6] = () => ADD(ref registers.registerAF, FetchParameters8Bit(), true); // Add immediate value to A register
-            //instructionSet[0xC7] = () => RST(0x00); // Restart at 0x00
-            //instructionSet[0xC8] = () => RET(zeroFLag); // Return if zero flag is set
-            //instructionSet[0xC9] = () => RET(); // Unconditional return from subroutine
-            //instructionSet[0xCA] = () => JP(zeroFLag, FetchParameters16Bit()); // Jump to address if zero flag is set
-            ////instructionSet[0xCB] = () => PREFIX();
-            //instructionSet[0xCC] = () => CALL(zeroFLag, FetchParameters16Bit()); // Call if zero flag is set
-            //instructionSet[0xCD] = () => CALL(FetchParameters16Bit()); // Call subroutine at address in PC
-            //instructionSet[0xCE] = () => ADC(ref registers.registerAF, FetchParameters8Bit(), true); // Add with carry immediate value to A register
-            //instructionSet[0xCF] = () => RST(0x08); // Restart at 0x08, typically used for interrupts or specific routines
-            //instructionSet[0xD0] = () => RET(!zeroFLag); // Return if no carry flag is set
-            //instructionSet[0xD1] = () => POP(ref registers.registerDE); // Pop DE from stack
-            //instructionSet[0xD2] = () => JP(!carryFlag, FetchParameters16Bit()); // Jump to address if no carry flag is set
-            //instructionSet[0xD4] = () => CALL(!carryFlag, FetchParameters16Bit()); // Call if no carry flag is set
-            //instructionSet[0xD5] = () => PUSH(ref registers.registerDE); // Push DE onto stack
-            //instructionSet[0xD6] = () => SUB(ref registers.registerAF, FetchParameters8Bit(), true); // Subtract immediate value from A register
-            //instructionSet[0xD7] = () => RST(0x10); // Restart at 0x10, typically used for interrupts or specific routines
-            //instructionSet[0xD8] = () => RET(carryFlag); // Return if carry flag is set
-            //instructionSet[0xD9] = () => RET(); // Unconditional return from subroutine (this is a duplicate, should be removed)
-            //instructionSet[0xDA] = () => JP(carryFlag, FetchParameters16Bit()); // Jump to address if carry flag is set
-            //instructionSet[0xDC] = () => CALL(carryFlag, FetchParameters16Bit()); // Call if carry flag is set
-            instructionSet[0xDE] = () => ADC(ref registers.registerAF, FetchParameters8Bit(), true); // Add with carry immediate value to A register
+            instructionSet[0xC0] = () => RET(!isZeroFlagSet());
+            instructionSet[0xC1] = () => POP(ref registers.registerBC); // Pop BC from stack
+            instructionSet[0xC2] = () => JP(!isCarryFlagSet(), FetchParameters16Bit());
+            instructionSet[0xC3] = () => JP(FetchParameters16Bit()); // Jump to address in PC
+            instructionSet[0xC4] = () => CALL(!isZeroFlagSet(), FetchParameters16Bit()); // Call if not zero flag is set
+            instructionSet[0xC5] = () => PUSH(ref registers.registerBC); // Push BC onto stack
+            instructionSet[0xC6] = () => ADD(ref registers.registerAF, FetchParameters8Bit(), true); // Add immediate value to A register
+            instructionSet[0xC7] = () => RST(0x00); // Restart at 0x00
+            instructionSet[0xC8] = () => RET(isZeroFlagSet()); // Return if zero flag is set
+            instructionSet[0xC9] = () => RET(); // Unconditional return from subroutine
+            instructionSet[0xCA] = () => JP(isZeroFlagSet(), FetchParameters16Bit()); // Jump to address if zero flag is set
+            //instructionSet[0xCB] = () => PREFIX();
+            instructionSet[0xCC] = () => CALL(isZeroFlagSet(), FetchParameters16Bit()); // Call if zero flag is set
+            instructionSet[0xCD] = () => CALL(FetchParameters16Bit()); // Call subroutine at address in PC
+            instructionSet[0xCE] = () => ADC(ref registers.registerAF, FetchParameters8Bit()); // Add with carry immediate value to A register
+            instructionSet[0xCF] = () => RST(0x08); // Restart at 0x08, typically used for interrupts or specific routines
+            instructionSet[0xD0] = () => RET(!isZeroFlagSet()); // Return if no carry flag is set
+            instructionSet[0xD1] = () => POP(ref registers.registerDE); // Pop DE from stack
+            instructionSet[0xD2] = () => JP(!isCarryFlagSet(), FetchParameters16Bit()); // Jump to address if no carry flag is set
+            instructionSet[0xD4] = () => CALL(!isCarryFlagSet(), FetchParameters16Bit()); // Call if no carry flag is set
+            instructionSet[0xD5] = () => PUSH(ref registers.registerDE); // Push DE onto stack
+            instructionSet[0xD6] = () => SUB(ref registers.registerAF, FetchParameters8Bit(), true); // Subtract immediate value from A register
+            instructionSet[0xD7] = () => RST(0x10); // Restart at 0x10, typically used for interrupts or specific routines
+            instructionSet[0xD8] = () => RET(isCarryFlagSet()); // Return if carry flag is set
+            instructionSet[0xD9] = () => RET(); // Unconditional return from subroutine (this is a duplicate, should be removed)
+            instructionSet[0xDA] = () => JP(isCarryFlagSet(), FetchParameters16Bit()); // Jump to address if carry flag is set
+            instructionSet[0xDC] = () => CALL(isCarryFlagSet(), FetchParameters16Bit()); // Call if carry flag is set
+            instructionSet[0xDE] = () => ADC(ref registers.registerAF, FetchParameters8Bit()); // Add with carry immediate value to A register
             instructionSet[0xDF] = () => RST(0x18); // Restart at 0x18, typically used for interrupts or specific routines
             instructionSet[0xE0] = () => LD(ref registers.registerAF, FetchParameters8Bit(), true); // Load immediate value into A register
             instructionSet[0xE1] = () => POP(ref registers.registerHL); // Pop HL from stack
@@ -343,7 +343,7 @@ namespace GameboyCPU
             if (value)
                 registers.registerAF |= 0x10;
             else
-                registers.registerAF &= 0xEF; // Clear the carry flag
+                registers.registerAF &= 0xFFEF; // Clear the carry flag
         }
 
         private void SetZeroFlag(bool value)
@@ -351,7 +351,7 @@ namespace GameboyCPU
             if (value)
                 registers.registerAF |= 0x80;
             else
-                registers.registerAF &= 0x7F; // Clear the zero flag
+                registers.registerAF &= 0xFF7F; // Clear the zero flag
         }
 
         private void SetSubtractFlag(bool value)
@@ -359,7 +359,7 @@ namespace GameboyCPU
             if (value)
                 registers.registerAF |= 0x20;
             else
-                registers.registerAF &= 0xDF; // Clear the subtract flag
+                registers.registerAF &= 0xFFDF; // Clear the subtract flag
         }
 
         private void SetHalfCarryFlag(bool value)
@@ -367,7 +367,7 @@ namespace GameboyCPU
             if (value)
                 registers.registerAF |= 0x40;
             else
-                registers.registerAF &= 0xBF; // Clear the half carry flag
+                registers.registerAF &= 0xFFBF; // Clear the half carry flag
         }
 
         private void SetNegativeFlag(bool value)
@@ -375,7 +375,7 @@ namespace GameboyCPU
             if (value)
                 registers.registerAF |= 0x02;
             else
-                registers.registerAF &= 0xFD; // Clear the negative flag
+                registers.registerAF &= 0xFFFD; // Clear the negative flag
         }
 
         public byte ReadInstruction(ushort programCounter)
@@ -1061,36 +1061,19 @@ namespace GameboyCPU
         ///// <param name="register1"></param>
         ///// <param name="register2"></param>
         ///// <param name="isUpper"></param>
-        private void SBC(ref ushort register1, ushort register2, bool isUpper)
+        private void SBC(ref ushort register1, byte register2)
         {
-            //    byte chosenByte;
-            //    if (isUpper)
-            //    {
-            //        chosenByte = (byte)(register1 >> 8);
-            //        chosenByte -= (byte)register2;
-            //        if (carryFlag)
-            //        {
-            //            chosenByte--;
-            //            SetSBCFlags(chosenByte, register1, register2, true);
-            //            return;
-            //        }
-            //        register1 = (ushort)((register1 & 0x00FF) | chosenByte);
-
-            //    }
-            //    else
-            //    {
-            //        chosenByte = (byte)(register1 & 0xFF);
-            //        chosenByte -= (byte)(register2);
-            //        if (carryFlag)
-            //        {
-            //            chosenByte--;
-            //            SetSBCFlags(chosenByte, register1, register2, true);
-            //            return;
-            //        }
-            //        register1 = (ushort)((register1 & 0xFF00) | chosenByte);
-            //    }
-            //    SetSBCFlags(chosenByte, register1, register2, false);
-            //    registers.registerPC++;
+            byte upperByte = (byte)(register1 >> 8);
+            byte lowerByte = (byte)(register1 & 0xFF);
+            upperByte -= register2;
+            if (isCarryFlagSet())
+            {
+                upperByte--;
+            }
+            register1 = (ushort)((upperByte << 8) | lowerByte);
+            
+            //SetSBCFlags(upperByte, register2);
+            registers.registerPC++;
         }
 
         ///// <summary>
@@ -1100,7 +1083,7 @@ namespace GameboyCPU
         ///// <param name="register2"></param>
         ///// <param name="address"></param>
         ///// <param name="isUpper"></param>
-        private void SBC(ref ushort register1, ushort register2, ushort address, bool isUpper)
+        private void SBC(ref ushort register1, ushort register2, ushort address)
         {
             //    var value = this.memoryMap.GetMemoryValue(address);
             //    byte chosenByte;
@@ -1128,44 +1111,6 @@ namespace GameboyCPU
             //    }
             //    SetSBCFlags(chosenByte, register1, register2, false);
             //    registers.registerPC++;
-        }
-
-        /// <summary>
-        /// Subtract the value of the second register from the first register including the carry flag
-        /// </summary>
-        /// <param name="register1"></param>
-        /// <param name="register2"></param>
-        /// <param name="address"></param>
-        /// <param name="isUpper"></param>
-        /// <exception cref="Exception"></exception>
-        private void SBC(ref ushort register1, byte register2, ushort address, bool isUpper)
-        {
-            var value = this.memoryMap.GetMemoryValue(address);
-            byte chosenByte;
-            if (isUpper)
-            {
-                chosenByte = (byte)(register1 >> 8);
-                var result = chosenByte - value;
-                if (isCarryFlagSet())
-                {
-                    chosenByte--;
-                    SetSBCFlags(chosenByte, register1, register2, true);
-                }
-            }
-            else
-            {
-                chosenByte = (byte)(register1 & 0xFF);
-                chosenByte -= (byte)(register2 & 0xFF);
-                if (isCarryFlagSet())
-                {
-                    chosenByte--;
-                    SetSBCFlags(chosenByte, register1, register2, true);
-                    return;
-                }
-
-            }
-            SetSBCFlags(chosenByte, register1, register2, false);
-            registers.registerPC++;
         }
 
         private void SetSBCFlags(ushort result, ushort register1, ushort register2, bool withCarry)
@@ -1262,30 +1207,18 @@ namespace GameboyCPU
         /// <param name="register1"></param>
         /// <param name="register2"></param>
         /// <param name="isUpper"></param>
-        private void ADC(ref ushort register1, byte register2, bool isUpper)
+        private void ADC(ref ushort register1, byte register2)
         {
             byte upperByte = (byte)(register1 >> 8);
             byte lowerByte = (byte)(register1 & 0xFF);
-
-            if (isUpper)
+            upperByte += register2;
+            if (isCarryFlagSet())
             {
-                upperByte += register2;
-                if (isCarryFlagSet())
-                {
-                    upperByte++;
-                }
-                register1 = (ushort)((upperByte << 8) | lowerByte);
+                upperByte++;
             }
-            else
-            {
-                lowerByte += register2;
-                if (isCarryFlagSet())
-                {
-                    lowerByte++;
-                }
-                register1 = (ushort)((upperByte << 8) | lowerByte);
-            }
-            HandleADCFlags(register1, register2);
+            register1 = (ushort)((upperByte << 8) | lowerByte);
+            
+            HandleADCFlags(upperByte, register2);
             registers.registerPC++;
         }
 
@@ -1349,7 +1282,7 @@ namespace GameboyCPU
             SetZeroFlag(register1 == 0);
             SetSubtractFlag(false);
             SetHalfCarryFlag((register1 & 0xF) + (register2 & 0xF) > 0xF);
-            SetCarryFlag(register1 + register2 > 0xFF);
+            SetCarryFlag(register1 + register2 > 255);
         }
         /// <summary>
         /// Rotate register A left. aka bitwise left shift where we move the carry to the right most bit
@@ -1810,6 +1743,8 @@ namespace GameboyCPU
             Console.WriteLine("RLCA test passed");
             TestADC();
             Console.WriteLine("ADC test passed");
+            TestSBC();
+            Console.WriteLine("SBC test passed");
         }
 
         private void TestDEC()
@@ -2044,33 +1979,34 @@ namespace GameboyCPU
 
         public void TestADC()
         {
-            ushort register = 0x00;
-            ADC(ref register, 0x01, true);
-            if (register != 0b0000000100000000)
+            registers.registerAF = 0x00;
+            ADC(ref registers.registerAF, 0x01);
+            if (registers.registerAF != 0b0000000100000000)
             {
-                string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
+                string binaryConversion = Convert.ToString(registers.registerAF, 2).PadLeft(16, '0');
                 throw new Exception("ADC failed expected: 0b0000000100000000 recieved: " + binaryConversion);
             }
-            register = 0b000000000001000;
-            ADC(ref register, 0x01, true);
-            if (register != 0b0000001000001000)
+            registers.registerAF = 0b0000000000010000;
+            ushort register = 0b0000000100000000;
+            ADC(ref register, 0x01);
+            if (register != 0b0000001100000000)
             {
                 string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
-                throw new Exception("ADC failed expected: 0b0000001000001000 recieved: " + binaryConversion);
+                throw new Exception("ADC failed expected: 0b0000001100000000 recieved: " + binaryConversion);
             }
         }
 
         public void TestSBC()
         {
             ushort register = 0xFF;
-            SBC(ref register, 0x01, true);
+            SBC(ref register, 0x01);
             if (register != 0b1111111011111111)
             {
                 string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
                 throw new Exception("SBC failed expected: 0b1111101111111111 recieved: " + binaryConversion);
             }
             register = 0xFF;
-            SBC(ref register, 0x01, false);
+            SBC(ref register, 0x01);
             if (register != 0b1111111111111110)
             {
                 string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
