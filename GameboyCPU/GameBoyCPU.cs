@@ -85,7 +85,7 @@ namespace GameboyCPU
             instructionSet[0x26] = () => LD(ref registers.registerHL, FetchParameters8Bit(), true);
             instructionSet[0x27] = () => DAA();
             instructionSet[0x28] = () => JR(registers.registerBC, false);
-            instructionSet[0x29] = () => ADD(ref registers.registerHL, registers.registerHL);
+            instructionSet[0x29] = () => ADDWithAddress(ref registers.registerHL, registers.registerHL);
             instructionSet[0x2A] = () => LDWithHCIncrement(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
             instructionSet[0x2B] = () => DEC(ref registers.registerHL);
             instructionSet[0x2C] = () => INC(ref registers.registerHL, false);
@@ -178,7 +178,7 @@ namespace GameboyCPU
             instructionSet[0x83] = () => ADD(ref registers.registerAF, (byte)(registers.registerDE << 8), true);
             instructionSet[0x84] = () => ADD(ref registers.registerAF, (byte)registers.registerHL, true);
             instructionSet[0x85] = () => ADD(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
-            instructionSet[0x86] = () => ADD(ref registers.registerAF, registers.registerHL, registers.registerHL);
+            instructionSet[0x86] = () => ADDWithAddress(ref registers.registerAF, registers.registerHL);
             instructionSet[0x87] = () => ADD(ref registers.registerAF, (byte)registers.registerAF, true);
             instructionSet[0x88] = () => ADC(ref registers.registerAF, (byte)registers.registerBC);
             instructionSet[0x89] = () => ADC(ref registers.registerAF, (byte)(registers.registerBC << 8));
@@ -188,21 +188,21 @@ namespace GameboyCPU
             instructionSet[0x8D] = () => ADC(ref registers.registerAF, (byte)(registers.registerHL << 8));
             instructionSet[0x8E] = () => ADC(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
             instructionSet[0x8F] = () => ADC(ref registers.registerAF, (byte)registers.registerAF);
-            instructionSet[0x90] = () => SUB(ref registers.registerAF, (byte)registers.registerBC, true);
-            instructionSet[0x91] = () => SUB(ref registers.registerAF, (byte)(registers.registerBC << 8), true);
-            instructionSet[0x92] = () => SUB(ref registers.registerAF, (byte)registers.registerDE, true);
-            instructionSet[0x93] = () => SUB(ref registers.registerAF, (byte)(registers.registerDE << 8), true);
-            instructionSet[0x94] = () => SUB(ref registers.registerAF, (byte)registers.registerHL, true);
-            instructionSet[0x95] = () => SUB(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
-            instructionSet[0x96] = () => SUB(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
-            instructionSet[0x97] = () => SUB(ref registers.registerAF, (byte)registers.registerAF, true);
+            instructionSet[0x90] = () => SUB(ref registers.registerAF, (byte)registers.registerBC);
+            instructionSet[0x91] = () => SUB(ref registers.registerAF, (byte)(registers.registerBC << 8));
+            instructionSet[0x92] = () => SUB(ref registers.registerAF, (byte)registers.registerDE);
+            instructionSet[0x93] = () => SUB(ref registers.registerAF, (byte)(registers.registerDE << 8));
+            instructionSet[0x94] = () => SUB(ref registers.registerAF, (byte)registers.registerHL);
+            instructionSet[0x95] = () => SUB(ref registers.registerAF, (byte)(registers.registerHL << 8));
+            instructionSet[0x96] = () => SUBWithAddress(ref registers.registerAF, registers.registerHL);
+            instructionSet[0x97] = () => SUB(ref registers.registerAF, (byte)registers.registerAF);
             instructionSet[0x98] = () => SBC(ref registers.registerAF, (byte)registers.registerBC);
             instructionSet[0x99] = () => SBC(ref registers.registerAF, (byte)(registers.registerBC << 8));
             instructionSet[0x9A] = () => SBC(ref registers.registerAF, (byte)registers.registerDE);
             instructionSet[0x9B] = () => SBC(ref registers.registerAF, (byte)(registers.registerDE << 8));
             instructionSet[0x9C] = () => SBC(ref registers.registerAF, (byte)registers.registerHL);
             instructionSet[0x9D] = () => SBC(ref registers.registerAF, (byte)(registers.registerHL << 8));
-            instructionSet[0x9E] = () => SBC(ref registers.registerAF, registers.registerHL, registers.registerHL);
+            instructionSet[0x9E] = () => SBC(ref registers.registerAF, registers.registerHL);
             instructionSet[0x9F] = () => SBC(ref registers.registerAF, (byte)registers.registerAF);
             instructionSet[0xA0] = () => AND(ref registers.registerAF, (byte)registers.registerBC, true);
             instructionSet[0xA1] = () => AND(ref registers.registerAF, (byte)(registers.registerBC << 8), true);
@@ -210,7 +210,7 @@ namespace GameboyCPU
             instructionSet[0xA3] = () => AND(ref registers.registerAF, (byte)(registers.registerDE << 8), true);
             instructionSet[0xA4] = () => AND(ref registers.registerAF, (byte)registers.registerHL, true);
             instructionSet[0xA5] = () => AND(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
-            instructionSet[0xA6] = () => AND(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
+            instructionSet[0xA6] = () => AND(ref registers.registerAF, registers.registerHL);
             instructionSet[0xA7] = () => AND(ref registers.registerAF, (byte)registers.registerAF, true);
             instructionSet[0xA8] = () => XOR(ref registers.registerAF, (byte)registers.registerBC, true);
             instructionSet[0xA9] = () => XOR(ref registers.registerAF, (byte)(registers.registerBC << 8), true);
@@ -218,7 +218,7 @@ namespace GameboyCPU
             instructionSet[0xAB] = () => XOR(ref registers.registerAF, (byte)(registers.registerDE << 8), true);
             instructionSet[0xAC] = () => XOR(ref registers.registerAF, (byte)registers.registerHL, true);
             instructionSet[0xAD] = () => XOR(ref registers.registerAF, (byte)(registers.registerHL << 8), true);
-            instructionSet[0xAE] = () => XOR(ref registers.registerAF, registers.registerHL, registers.registerHL, true);
+            instructionSet[0xAE] = () => XOR(ref registers.registerAF, registers.registerHL);
             instructionSet[0xAF] = () => XOR(ref registers.registerAF, (byte)registers.registerAF, true);
             instructionSet[0xB0] = () => OR(ref registers.registerAF, (byte)registers.registerBC, true);
             instructionSet[0xB1] = () => OR(ref registers.registerAF, (byte)(registers.registerBC << 8), true);
@@ -257,7 +257,7 @@ namespace GameboyCPU
             instructionSet[0xD2] = () => JP(!isCarryFlagSet(), FetchParameters16Bit()); // Jump to address if no carry flag is set
             instructionSet[0xD4] = () => CALL(!isCarryFlagSet(), FetchParameters16Bit()); // Call if no carry flag is set
             instructionSet[0xD5] = () => PUSH(ref registers.registerDE); // Push DE onto stack
-            instructionSet[0xD6] = () => SUB(ref registers.registerAF, FetchParameters8Bit(), true); // Subtract immediate value from A register
+            instructionSet[0xD6] = () => SUB(ref registers.registerAF, FetchParameters8Bit()); // Subtract immediate value from A register
             instructionSet[0xD7] = () => RST(0x10); // Restart at 0x10, typically used for interrupts or specific routines
             instructionSet[0xD8] = () => RET(isCarryFlagSet()); // Return if carry flag is set
             instructionSet[0xD9] = () => RET(); // Unconditional return from subroutine (this is a duplicate, should be removed)
@@ -277,7 +277,7 @@ namespace GameboyCPU
             instructionSet[0xEE] = () => XOR(ref registers.registerAF, FetchParameters8Bit(), true); // XOR immediate value with A register
             instructionSet[0xEF] = () => RST(0x28); // Restart at 0x28, typically used for interrupts or specific routines
             instructionSet[0xF0] = () => LD(ref registers.registerAF, FetchParameters8Bit(), true); // Load immediate value into A register
-            instructionSet[0xF1] = () => POP(ref registers.registerAF); // Pop AF from stack, typically used for restoring flags
+            instructionSet[0xF1] = () => POPAF(ref registers.registerAF); // Pop AF from stack, typically used for restoring flags
             instructionSet[0xF2] = () => LD(ref registers.registerAF, (byte)(registers.registerBC >> 8), registers.registerAF); // Load BC into A register
             //instructionSet[0xF3] = () => DI(); // Disable interrupts (set IMEFlag to false)
             instructionSet[0xF5] = () => PUSH(ref registers.registerAF); // Push AF onto stack, typically used for saving flags
@@ -473,23 +473,31 @@ namespace GameboyCPU
         // Pop the value from the stack into the register
         // This would typically involve reading from memory where the stack pointer is pointing to
         // and then incrementing the stack pointer.
-        private void POP(ref ushort register)
+        private void POPAF(ref ushort register)
         {
             register = memoryMap.PopFromStack();
+             byte lowerByte = (byte)(register & 0xFF);
+            SetPOPFlags(lowerByte);
             registers.registerPC++;
         }
 
-        //private void SetPOPFlags(byte result)
-        //{
-        //    // set zero flag if bit 7 is set
-        //    zeroFLag = result == 0;
-        //    // set subtract flag if bit 6 is set
-        //    subtractFlagN = (result & 0x20) != 0;
-        //    // set half carry flag if bit 5 is set
-        //    HalfCarryFlag = (result & 0x10) != 0;
-        //    // set carry flag if bit 4 is set
-        //    carryFlag = (result & 0x08) != 0;
-        //}
+        // Pop the value from the stack into the register
+        // This would typically involve reading from memory where the stack pointer is pointing to
+        // and then incrementing the stack pointer.
+        private void POP(ref ushort register)
+        {
+            register = memoryMap.PopFromStack();
+            byte lowerByte = (byte)(register & 0xFF);
+            registers.registerPC++;
+        }
+
+        private void SetPOPFlags(byte result)
+        {
+            SetZeroFlag(result == 0);
+            SetSubtractFlag((result & 0x20) != 0);
+            SetHalfCarryFlag((result & 0x10) != 0);
+            SetCarryFlag((result & 0x08) != 0);
+        }
 
         private void PUSH(ref ushort register)
         {
@@ -780,25 +788,15 @@ namespace GameboyCPU
         /// <param name="register1"></param>
         /// <param name="register2"></param>
         /// <param name="isUpper"></param>
-        private void SUB(ref ushort register1, byte register2, bool isUpper)
+        private void SUB(ref ushort register1, byte register2)
         {
             byte upperByte = (byte)(register1 >> 8);
             byte lowerByte = (byte)(register1 & 0xFF);
 
-            byte chosenByte;
-            if (isUpper)
-            {
-                upperByte -= (byte)(register2);
-                chosenByte = upperByte;
-            }
-            else
-            {
-                lowerByte -= register2;
-                chosenByte = lowerByte;
-            }
+            upperByte -= (byte)(register2);
 
             register1 = (ushort)((upperByte << 8) | lowerByte);
-            SetSUBFlags(chosenByte, register1, register2);
+            SetSUBFlags(upperByte, register2);
             registers.registerPC++;
         }
 
@@ -809,60 +807,23 @@ namespace GameboyCPU
         /// <param name="register2"></param>
         /// <param name="address"></param>
         /// <param name="isUpper"></param>
-        private void SUB(ref ushort register1, byte register2, ushort address, bool isUpper)
+        private void SUBWithAddress(ref ushort register1, ushort register2)
         {
-            var value = this.memoryMap.GetMemoryValue(address);
-            ushort chosenByte;
-            ushort result = 0;
-            if (isUpper)
-            {
-                chosenByte = (byte)(register1 >> 8);
-                result = (ushort)(chosenByte - value);
-                register1 = (ushort)((register1 & 0x00FF) | result);
-            }
-            else
-            {
-                chosenByte = (byte)(register1 & 0xFF);
-                result = (ushort)(chosenByte - value);
-                register1 = (ushort)((register1 & 0xFF00) | result);
-            }
-            SetSUBFlags(result, chosenByte, register2);
+            var value = this.memoryMap.GetMemoryValue(register2);
+            ushort upperByte = (byte)(register1 >> 8);
+            ushort lowerByte = (byte)(register1 & 0xFF);
+
+            upperByte -= value;
+            register1 = (ushort)((upperByte << 8) | lowerByte);
+            SetSUBFlags(upperByte, value);
             registers.registerPC++;
         }
 
-        /// <summary>
-        /// subtract the value of the second register to the first register
-        /// </summary>
-        /// <param name="register1"></param>
-        /// <param name="register2"></param>
-        /// <param name="address"></param>
-        /// <param name="isUpper"></param>
-        private void SUB(ref ushort register1, ushort register2, ushort address, bool isUpper)
+        private void SetSUBFlags(ushort register1, ushort register2)
         {
-            var value = this.memoryMap.GetMemoryValue(address);
-            ushort chosenByte;
-            ushort result = 0;
-            if (isUpper)
-            {
-                chosenByte = (byte)(register1 >> 8);
-                result = (ushort)(chosenByte - value);
-                register1 = (ushort)((register1 & 0x00FF) | result);
-            }
-            else
-            {
-                chosenByte = (byte)(register1 & 0xFF);
-                result = (ushort)(chosenByte - value);
-                register1 = (ushort)((register1 & 0xFF00) | result);
-            }
-            SetSUBFlags(result, chosenByte, register2);
-            registers.registerPC++;
-        }
-
-        private void SetSUBFlags(ushort result, ushort register1, ushort register2)
-        {
-            SetZeroFlag(result == 0);
+            SetZeroFlag(register1 == 0);
             SetSubtractFlag(true);
-            SetHalfCarryFlag((result & 0xF) > 0xF);
+            SetHalfCarryFlag((register1 & 0xF) > 0xF);
             SetCarryFlag(register2 > register1);
         }
 
@@ -899,72 +860,45 @@ namespace GameboyCPU
         /// <param name="register2"></param>
         /// <param name="address"></param>
         /// <param name="isUpper"></param>
-        private void AND(ref ushort register1, ushort register2, ushort address, bool isUpper)
+        private void AND(ref ushort register1, ushort register2)
         {
-            var value = this.memoryMap.GetMemoryValue(address);
-            ushort chosenByte;
-            if (isUpper)
-            {
-                chosenByte = (byte)(register1 >> 8);
-                var result = chosenByte & value;
-                register1 = (ushort)((register1 & 0x00FF) | result);
-            }
-            else
-            {
-                chosenByte = (byte)(register1 & 0xFF);
-                var result = chosenByte & value;
-                register1 = (ushort)((register1 & 0xFF00) | result);
-            }
-            registers.registerPC++;
-        }
+            var value = this.memoryMap.GetMemoryValue(register2);
+            ushort upperByte = (byte)(register1 >> 8);
+            ushort lowerByte = (byte)(register1 & 0xFF);
 
-        /// <summary>
-        /// Do a bitwise AND operation on the first register with the second register
-        /// </summary>
-        /// <param name="register1"></param>
-        /// <param name="register2"></param>
-        /// <param name="address"></param>
-        /// <param name="isUpper"></param>
-        private void AND(ref ushort register1, byte register2, ushort address, bool isUpper)
-        {
-            var value = this.memoryMap.GetMemoryValue(address);
-            ushort chosenByte;
-            if (isUpper)
-            {
-                chosenByte = (byte)(register1 >> 8);
-                var result = chosenByte & value;
-                register1 = (ushort)((register1 & 0x00FF) | result);
-            }
-            else
-            {
-                chosenByte = (byte)(register1 & 0xFF);
-                var result = chosenByte & value;
-                register1 = (ushort)((register1 & 0xFF00) | result);
-            }
+            var result = upperByte & value;
+
+            register1 = (ushort)((upperByte << 8) | lowerByte);
             registers.registerPC++;
         }
 
         /// add function is wrong pls fix
-        private void ADD(ref ushort register1, ushort register2, ushort address)
+        private void ADD(ref ushort register1, ushort register2)
         {
-            if (register1 == address)
-            {
-                byte memoryValue = memoryMap.GetMemoryValueAsRefrence(address);
-                memoryValue += (byte)(register2 >> 8);
-            }
-            else if (register2 == address)
-            {
-                register1 = (ushort)(memoryMap.GetMemoryValue(address) + register1);
-            }
+            var result = register1 += register2;
+            SetADDFlags(result);
+            registers.registerPC++;
+        }
+
+        /// add function is wrong pls fix
+        private void ADDWithAddress(ref ushort register1, ushort register2)
+        {
+            byte memoryValue = memoryMap.GetMemoryValueAsRefrence(register2);
+            byte lowerByte = (byte)(register1 & 0xFF);
+            byte upperByte = (byte)(register1 >> 8);
+
+            upperByte += memoryValue;
+
+            register1 = (ushort)((upperByte << 8) | lowerByte);
             registers.registerPC++;
         }
 
         private void SetADDFlags(ushort result)
         {
-            //zeroFLag = result == 0;
-            //subtractFlagN = false;
-            //HalfCarryFlag = (result & 0xF) > 0xF;
-            //carryFlag = result > 0xFF;
+            SetZeroFlag(result == 0);
+            SetSubtractFlag(false);
+            SetHalfCarryFlag((result & 0xF) > 0xF);
+            SetCarryFlag(result > 0xFF);
         }
 
         /// <summary>
@@ -1001,62 +935,28 @@ namespace GameboyCPU
         /// <param name="register2"></param>
         /// <param name="address"></param>
         /// <param name="isUpper"></param>
-        private void XOR(ref ushort register1, ushort register2, ushort address, bool isUpper)
+        private void XOR(ref ushort register1, ushort register2)
         {
-            var value = this.memoryMap.GetMemoryValue(address);
-            ushort chosenByte;
-            if (isUpper)
-            {
-                chosenByte = (byte)(register1 >> 8);
-                var result = chosenByte ^ value;
-                register1 = (ushort)((register1 & 0x00FF) | result);
-            }
-            else
-            {
-                chosenByte = (byte)(register1 & 0xFF);
-                var result = chosenByte ^ value;
-                register1 = (ushort)((register1 & 0xFF00) | result);
-            }
-            SetXORFlags(chosenByte);
-            registers.registerPC++;
-        }
+            var value = this.memoryMap.GetMemoryValue(register2);
+            byte upperByte = (byte)(register1 >> 8);
+            byte lowerByte = (byte)(register1 & 0xFF);
 
-        /// <summary>
-        /// Do a xor operation on the first register with the second register
-        /// </summary>
-        /// <param name="register1"></param>
-        /// <param name="register2"></param>
-        /// <param name="address"></param>
-        /// <param name="isUpper"></param>
-        private void XOR(ref ushort register1, byte register2, ushort address, bool isUpper)
-        {
-            var value = this.memoryMap.GetMemoryValue(address);
-            ushort chosenByte;
-            if (isUpper)
-            {
-                chosenByte = (byte)(register1 >> 8);
-                var result = chosenByte ^ value;
-                register1 = (ushort)((register1 & 0x00FF) | result);
-            }
-            else
-            {
-                chosenByte = (byte)(register1 & 0xFF);
-                var result = chosenByte ^ value;
-                register1 = (ushort)((register1 & 0xFF00) | result);
-            }
-            SetXORFlags(chosenByte);
+            upperByte ^= value;
+            register1 = (ushort)((upperByte << 8) | lowerByte);
+            SetXORFlags(upperByte);
             registers.registerPC++;
         }
 
         private void SetXORFlags(ushort result)
         {
-            //zeroFLag = result == 0;
-            //HalfCarryFlag = false;
-            //subtractFlagN = false;
-            //carryFlag = false;
+            SetZeroFlag(result == 0);
+            SetSubtractFlag(false);
+            SetHalfCarryFlag(false);
+            SetCarryFlag(false);
         }
+
         ///// <summary>
-        ///// Add the value of the second register to the first register including the carry flag
+        ///// subtract the value of the second register to the first register including the carry flag
         ///// </summary>
         ///// <param name="register1"></param>
         ///// <param name="register2"></param>
@@ -1083,53 +983,30 @@ namespace GameboyCPU
         ///// <param name="register2"></param>
         ///// <param name="address"></param>
         ///// <param name="isUpper"></param>
-        private void SBC(ref ushort register1, ushort register2, ushort address)
+        private void SBC(ref ushort register1, ushort register2)
         {
-            //    var value = this.memoryMap.GetMemoryValue(address);
-            //    byte chosenByte;
-            //    if (isUpper)
-            //    {
-            //        chosenByte = (byte)(register1 >> 8);
-            //        var result = chosenByte - value;
-            //        if (carryFlag)
-            //        {
-            //            chosenByte--;
-            //            SetSBCFlags(chosenByte, register1, register2, true);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        chosenByte = (byte)(register1 & 0xFF);
-            //        chosenByte -= (byte)(register2 & 0xFF);
-            //        if (carryFlag)
-            //        {
-            //            chosenByte--;
-            //            SetSBCFlags(chosenByte, register1, register2, true);
-            //            return;
-            //        }
+            var value = this.memoryMap.GetMemoryValue(register2);
+            byte upperByte = (byte)(register1 >> 8);
+            byte lowerByte = (byte)(register1 & 0xFF);
 
-            //    }
-            //    SetSBCFlags(chosenByte, register1, register2, false);
-            //    registers.registerPC++;
-        }
+            upperByte -= value;
 
-        private void SetSBCFlags(ushort result, ushort register1, ushort register2, bool withCarry)
-        {
-            SetZeroFlag(result == 0);
-            SetSubtractFlag(true);
-            SetHalfCarryFlag((register1 & 0xF) - (register2 & 0xF) < 0);
-            SetCarryFlag(register1 < register2);
-        }
+            if (isCarryFlagSet())
+            {
+                upperByte--;
+            }
 
-        /// <summary>
-        /// Add the value of the second register to the first register
-        /// </summary>
-        /// <param name="register1"></param>
-        /// <param name="register2"></param>
-        private void ADD(ref ushort register1, ushort register2)
-        {
-            register1 = (ushort)(register1 + register2);
+            register1 = (ushort)((upperByte << 8) | lowerByte);
+            SetSBCFlags(upperByte, value);
             registers.registerPC++;
+        }
+
+        private void SetSBCFlags(byte register1, byte register2)
+        {
+            SetZeroFlag(register1 == 0);
+            SetSubtractFlag(false);
+            SetHalfCarryFlag((register1 & 0xF) + (register2 & 0xF) > 0xF);
+            SetCarryFlag(register1 + register2 > 255);
         }
 
         /// <summary>
@@ -1820,19 +1697,14 @@ namespace GameboyCPU
         private void TestSUB()
         {
             ushort register = 0xFFFF;
-            SUB(ref register, 0x01, true);
+            SUB(ref register, 0x01);
             if (register != 0b1111111011111111)
             {
                 string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
                 throw new Exception("SUB failed expected: 0b1111101111111111 recieved: " + binaryConversion);
             }
             register = 0xFFFF;
-            SUB(ref register, 0x01, false);
-            if (register != 0b1111111111111110)
-            {
-                string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
-                throw new Exception("SUB failed expected: 0b1111111111111110 recieved: " + binaryConversion);
-            }
+            // Add Sub with Address
         }
 
         private void TestXOR()
