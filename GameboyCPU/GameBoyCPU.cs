@@ -403,23 +403,23 @@ namespace GameboyCPU
 
         #region INSTRUCTION_FUNCTIONS
 
-        //private void DI()
-        //{
-        //    IMEFlag = false;
-        //    registers.registerPC++;
-        //}
+        private void DI()
+        {
+            //IMEFlag = false;
+            registers.registerPC++;
+        }
 
-        //private void EI()
-        //{
-        //    IMEFlag = true;
-        //    registers.registerPC++;
-        //}
+        private void EI()
+        {
+            //IMEFlag = true;
+            registers.registerPC++;
+        }
 
-        //private void SCF()
-        //{
-        //    carryFlag = true;
-        //    registers.registerPC++;
-        //}
+        private void SCF()
+        {
+            SetCarryFlag(true);
+            registers.registerPC++;
+        }
 
         private void RST(byte address)
         {
@@ -593,10 +593,10 @@ namespace GameboyCPU
 
         private void SetCPFlags(byte result, ushort register1, ushort register2)
         {
-            //zeroFLag = result == 0;
-            //subtractFlagN = true;
-            //HalfCarryFlag = (result & 0xF) > (result & 0xF);
-            //carryFlag = register1 > register2;
+            SetZeroFlag(result == 0);
+            SetSubtractFlag(true);
+            SetHalfCarryFlag((result & 0xF) > (result & 0xF));
+            SetCarryFlag(register1 > register2);
         }
 
         /// <summary>
@@ -685,10 +685,10 @@ namespace GameboyCPU
 
         private void SetORFlags(ushort result)
         {
-            //zeroFLag = result == 0;
-            //HalfCarryFlag = false;
-            //subtractFlagN = false;
-            //carryFlag = false;
+            SetZeroFlag(result == 0);
+            SetHalfCarryFlag(false);
+            SetSubtractFlag(false);
+            SetCarryFlag(false);
         }
 
         /// <summary>
@@ -701,8 +701,8 @@ namespace GameboyCPU
             a = (byte)~a;
 
             registers.registerAF = (ushort)((registers.registerAF & (0xFF00)) | a);
-            //subtractFlagN = true;
-            //HalfCarryFlag = true;
+            SetSubtractFlag(true);
+            SetHalfCarryFlag(true);
             registers.registerPC++;
         }
 
@@ -1870,22 +1870,41 @@ namespace GameboyCPU
 
         public void TestSBC()
         {
-            ushort register = 0xFF;
+            registers.registerAF = 0x0;
+            ushort register = 0xFFFF;
             SBC(ref register, 0x01);
             if (register != 0b1111111011111111)
             {
                 string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
                 throw new Exception("SBC failed expected: 0b1111101111111111 recieved: " + binaryConversion);
             }
-            register = 0xFF;
+            registers.registerAF = 0b0000000000010000;
+            register = 0xFFFF;
             SBC(ref register, 0x01);
-            if (register != 0b1111111111111110)
+            if (register != 0b1111110111111111)
             {
                 string binaryConversion = Convert.ToString(register, 2).PadLeft(16, '0');
                 throw new Exception("SBC failed expected: 0b1111111111111110 recieved: " + binaryConversion);
             }
         }
 
-        #endregion
-    }
+        public void TestCPL()
+        {
+            registers.registerAF = 0;
+            CPL();
+            if (registers.registerAF != 0b1111111100000000)
+            {
+                string binaryConversion = Convert.ToString(registers.registerAF, 2).PadLeft(16, '0');
+                throw new Exception("CPL failed expected: 0b1111111100000000 recieved: " + binaryConversion);
+            }
+            registers.registerAF = 0xFFFF;
+            CPL();
+            if (registers.registerAF != 0b0000000011111111)
+            {
+                string binaryConversion = Convert.ToString(registers.registerAF, 2).PadLeft(16, '0');
+                throw new Exception("CPL failed expected: 0b0000000011111111 recieved: " + binaryConversion);
+            }
+
+            #endregion
+        }
 }
